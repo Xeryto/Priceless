@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Priceless2.Models
+namespace Priceless.Models
 {
     public class Teacher : Person
     {

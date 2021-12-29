@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Priceless2.Models
+namespace Priceless.Models
 {
     public class Enrollment
     {
