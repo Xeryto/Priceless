@@ -19,6 +19,8 @@
     <None Remove="Microsoft.CodeAnalysis.Analyzers" />
     <None Remove="Models\Helpers\" />
     <None Remove="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <None Remove="Microsoft.AspNet.WebPages" />
+    <None Remove="Services\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.13" />
@@ -41,9 +43,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
+    <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.7" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Models\Helpers\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 </Project>

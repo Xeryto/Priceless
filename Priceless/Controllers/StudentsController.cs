@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Priceless.Models.Helpers;
 using Priceless.Models;
+using System.Security.Cryptography;
 
 namespace Priceless.Controllers
 {
@@ -66,24 +67,84 @@ namespace Priceless.Controllers
             //var student = mapper.Map<StudentPostModel, Student>(studentPost);
             if (ModelState.IsValid)
             {
-                /*if (studentPost.Image != null)
+                if (!_context.People.Any(p => p.Login == student.Login))
                 {
-                    var stream = new MemoryStream();
-                    await studentPost.Image.CopyToAsync(stream);
-                    student.Image = stream.ToArray();
-                }
+                    /*if (studentPost.Image != null)
+                    {
+                        var stream = new MemoryStream();
+                        await studentPost.Image.CopyToAsync(stream);
+                        student.Image = stream.ToArray();
+                    }
 
-                PersonCacheModel userCache = new()
+                    PersonCacheModel userCache = new()
+                    {
+                        Id = student.Id,
+                        Image = student.Image
+                    };
+                    WebCache.Set("LoggedIn", userCache, 60, true);*/
+                    student.Password = Hash(student.Password);
+                    _context.Add(student);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
                 {
-                    Id = student.Id,
-                    Image = student.Image
-                };
-                WebCache.Set("LoggedIn", userCache, 60, true);*/
-                _context.Add(student);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                    return View(student);
+                }
             }
             PopulateAssignedMajorData(student);
+            return View(student);
+        }
+
+        public async Task<IActionResult> EditImage(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var student = await _context.Students
+                .Include(i => i.Admissions).ThenInclude(i => i.Major)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (student == null)
+            {
+                return NotFound();
+            }
+            PopulateAssignedMajorData(student);
+            return View(student);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditImage(int id, [Bind("Image")] Student student)
+        {
+            if (id != student.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(student);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!StudentExists(student.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
             return View(student);
         }
 
@@ -136,12 +197,21 @@ namespace Priceless.Controllers
                     .ThenInclude(i => i.Major)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
+            var pass = studentToUpdate.Password;
+
             if (await TryUpdateModelAsync<Student>(
                 studentToUpdate,
                 "",
-                i => i.Name, i => i.Login, i => i.Password, i => i.Grade, i => i.City,
-                i => i.ParentName, i => i.Phone, i => i.ParentPhone, i => i.FirstQA, i => i.SeconQA))
+                i => i.Name, i => i.Password))
             {
+                if (studentToUpdate.Password != null)
+                {
+                    studentToUpdate.Password = Hash(studentToUpdate.Password);
+                }
+                else
+                {
+                    studentToUpdate.Password = pass;
+                }
                 UpdateStudentMajors(selectedMajors, studentToUpdate);
                 try
                 {
@@ -229,6 +299,25 @@ namespace Priceless.Controllers
         private bool StudentExists(int id)
         {
             return _context.Students.Any(e => e.Id == id);
+        }
+
+        private static string Hash(string password)
+        {
+            byte[] salt;
+            byte[] buffer2;
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            using (Rfc2898DeriveBytes bytes = new(password, 0x10, 0x3e8))
+            {
+                salt = bytes.Salt;
+                buffer2 = bytes.GetBytes(0x20);
+            }
+            byte[] dst = new byte[0x31];
+            Buffer.BlockCopy(salt, 0, dst, 1, 0x10);
+            Buffer.BlockCopy(buffer2, 0, dst, 0x11, 0x20);
+            return Convert.ToBase64String(dst);
         }
     }
 }

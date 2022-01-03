@@ -13,6 +13,9 @@ using Priceless.Models;
 
 using Excel = Microsoft.Office.Interop.Excel;
 using ExcelAutoFormat = Microsoft.Office.Interop.Excel.XlRangeAutoFormat;
+using Priceless.Models.Helpers;
+using Priceless.Services;
+using System.Web.Helpers;
 
 namespace Priceless.Controllers
 {
@@ -20,11 +23,13 @@ namespace Priceless.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly PersonService _service;
 
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment)
+        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, PersonService service)
         {
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
+            _service = service;
         }
 
         public IActionResult Index()
@@ -33,6 +38,43 @@ namespace Priceless.Controllers
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult Logout()
+        {
+            WebCache.Remove("LoggedIn");
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(PersonLoginModel person)
+        {
+            if (await _service.Login(person.Login, person.Password))
+            {
+                var commonPerson = await _service.GetByLogin(person.Login);
+                PersonCacheModel personCache = new()
+                {
+                    Id = commonPerson.Id,
+                    Image = commonPerson.Image
+                };
+                WebCache.Set("LoggedIn", personCache, 60, true);
+                return RedirectToAction("Index", "Home");
+            }
+            else return View(new PersonLoginModel()
+            {
+                InfoNotValid = true
+            });
+        }
+
+        public IActionResult Register()
         {
             return View();
         }
