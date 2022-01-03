@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Priceless.Models.Helpers
+namespace Priceless.Models
 {
     public class ErrorViewModel
     {

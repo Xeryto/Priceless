@@ -60,7 +60,7 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,Image")] Student student)
+        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,Image,Parent,Phone,ParentPhone,City,FirstQA,SecondQA")] Student student)
         {
             //var mapper = new Mapper(config);
             //var student = mapper.Map<StudentPostModel, Student>(studentPost);
@@ -96,8 +96,6 @@ namespace Priceless.Controllers
             }
 
             var student = await _context.Students
-                .Include(i => i.Enrollments).ThenInclude(i => i.Course)
-                .AsNoTracking()
                 .Include(i => i.Admissions).ThenInclude(i => i.Major)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -134,8 +132,6 @@ namespace Priceless.Controllers
         public async Task<IActionResult> Edit(int? id, int[] selectedMajors)
         {
             var studentToUpdate = await _context.Students
-                .Include(i => i.Enrollments)
-                    .ThenInclude(i => i.Course)
                 .Include(i => i.Admissions)
                     .ThenInclude(i => i.Major)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -143,7 +139,8 @@ namespace Priceless.Controllers
             if (await TryUpdateModelAsync<Student>(
                 studentToUpdate,
                 "",
-                i => i.Name, i => i.Login, i => i.Password, i => i.Grade, i => i.City, i => i.ParentName, i => i.Phone, i => i.ParentPhone))
+                i => i.Name, i => i.Login, i => i.Password, i => i.Grade, i => i.City,
+                i => i.ParentName, i => i.Phone, i => i.ParentPhone, i => i.FirstQA, i => i.SeconQA))
             {
                 UpdateStudentMajors(selectedMajors, studentToUpdate);
                 try
@@ -172,21 +169,21 @@ namespace Priceless.Controllers
                 return;
             }
 
-            var selectedCoursesHS = new HashSet<int>(selectedMajors);
-            var instructorCourses = new HashSet<int>
+            var selectedMajorsHS = new HashSet<int>(selectedMajors);
+            var studentCourses = new HashSet<int>
                 (studentToUpdate.Admissions.Select(c => c.Major.Id));
             foreach (var course in _context.Courses)
             {
-                if (selectedCoursesHS.Contains(course.Id))
+                if (selectedMajorsHS.Contains(course.Id))
                 {
-                    if (!instructorCourses.Contains(course.Id))
+                    if (!studentCourses.Contains(course.Id))
                     {
                         studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = course.Id });
                     }
                 }
                 else
                 {
-                    if (instructorCourses.Contains(course.Id))
+                    if (studentCourses.Contains(course.Id))
                     {
                         Admission AdmissionToRemove = studentToUpdate.Admissions.FirstOrDefault(i => i.MajorId == course.Id);
                         _context.Remove(AdmissionToRemove);
