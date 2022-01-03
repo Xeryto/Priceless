@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Priceless.Services;
 
 namespace Priceless
 {
@@ -34,6 +35,8 @@ namespace Priceless
 
             services.AddDbContext<PricelessContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddTransient(typeof(PersonService));
 
             services.AddControllersWithViews();
         }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Priceless.Models.Helpers;
 using Priceless.Models;
+using System.Security.Cryptography;
 
 namespace Priceless.Controllers
 {
@@ -61,9 +62,17 @@ namespace Priceless.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(teacher);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (! _context.People.Any(p => p.Login == teacher.Login))
+                {
+                    teacher.Password = Hash(teacher.Password);
+                    _context.Add(teacher);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    return View(teacher);
+                }
             }
             PopulateAssignedCourseData(teacher);
             return View(teacher);
@@ -122,12 +131,21 @@ namespace Priceless.Controllers
                 .Include(i => i.CourseAssignments)
                     .ThenInclude(i => i.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
+            var pass = teacherToUpdate.Password;
 
             if (await TryUpdateModelAsync<Teacher>(
                 teacherToUpdate,
                 "",
-                i => i.Name, i => i.Login, i => i.Password))
+                i => i.Name, i => i.Password))
             {
+                if (teacherToUpdate.Password != null)
+                {
+                    teacherToUpdate.Password = Hash(teacherToUpdate.Password);
+                }
+                else
+                {
+                    teacherToUpdate.Password = pass;
+                }
                 UpdateTeacherCourses(selectedCourses, teacherToUpdate);
                 try
                 {
@@ -215,6 +233,25 @@ namespace Priceless.Controllers
         private bool TeacherExists(int id)
         {
             return _context.Teachers.Any(e => e.Id == id);
+        }
+
+        private static string Hash(string password)
+        {
+            byte[] salt;
+            byte[] buffer2;
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            using (Rfc2898DeriveBytes bytes = new(password, 0x10, 0x3e8))
+            {
+                salt = bytes.Salt;
+                buffer2 = bytes.GetBytes(0x20);
+            }
+            byte[] dst = new byte[0x31];
+            Buffer.BlockCopy(salt, 0, dst, 1, 0x10);
+            Buffer.BlockCopy(buffer2, 0, dst, 0x11, 0x20);
+            return Convert.ToBase64String(dst);
         }
     }
 }

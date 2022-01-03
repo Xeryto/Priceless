@@ -11,7 +11,7 @@ namespace Priceless.Models
         public string City { get; set; }
         public int Grade { get; set; }
         public string FirstQA { get; set; }
-        public string SeconQA { get; set; }
+        public string SecondQA { get; set; }
         public ICollection<Admission> Admissions { get; set; }
         public ICollection<Enrollment> Enrollments { get; set; }
     }
