@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Priceless;
+using Priceless.Models.Helpers;
 using Priceless.Models;
 
 namespace Priceless.Controllers
@@ -46,12 +46,15 @@ namespace Priceless.Controllers
         // GET: Teachers/Create
         public IActionResult Create()
         {
+            var teacher = new Teacher();
+            teacher.CourseAssignments = new List<CourseAssignment>();
+            PopulateAssignedCourseData(teacher);
             return View();
         }
 
         // POST: Teachers/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Login,Password,Name,Image")] Teacher teacher)
@@ -62,6 +65,7 @@ namespace Priceless.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            PopulateAssignedCourseData(teacher);
             return View(teacher);
         }
 
@@ -73,47 +77,106 @@ namespace Priceless.Controllers
                 return NotFound();
             }
 
-            var teacher = await _context.Teachers.FindAsync(id);
+            var teacher = await _context.Teachers
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (teacher == null)
             {
                 return NotFound();
             }
+            PopulateAssignedCourseData(teacher);
             return View(teacher);
         }
 
+        private void PopulateAssignedCourseData(Teacher teacher)
+        {
+            var allCourses = _context.Courses;
+            var instructorCourses = new HashSet<int>(teacher.CourseAssignments.Select(c => c.CourseId));
+            var viewModel = new List<AssignedCourseData>();
+            foreach (var course in allCourses)
+            {
+                viewModel.Add(new AssignedCourseData
+                {
+                    CourseId = course.Id,
+                    Title = course.Title,
+                    Assigned = instructorCourses.Contains(course.Id)
+                });
+            }
+            ViewData["Courses"] = viewModel;
+        }
+
         // POST: Teachers/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Login,Password,Name,Image")] Teacher teacher)
+        public async Task<IActionResult> Edit(int? id, int[] selectedCourses)
         {
-            if (id != teacher.Id)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            var teacherToUpdate = await _context.Teachers
+                .Include(i => i.CourseAssignments)
+                    .ThenInclude(i => i.Course)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (await TryUpdateModelAsync<Teacher>(
+                teacherToUpdate,
+                "",
+                i => i.Name, i => i.Login, i => i.Password))
             {
+                UpdateTeacherCourses(selectedCourses, teacherToUpdate);
                 try
                 {
-                    _context.Update(teacher);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateException /* ex */)
                 {
-                    if (!TeacherExists(teacher.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    //Log the error (uncomment ex variable name and write a log.)
+                    ModelState.AddModelError("", "Unable to save changes. " +
+                        "Try again, and if the problem persists, " +
+                        "see your system administrator.");
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(teacher);
+            UpdateTeacherCourses(selectedCourses, teacherToUpdate);
+            PopulateAssignedCourseData(teacherToUpdate);
+            return View(teacherToUpdate);
+        }
+
+        private void UpdateTeacherCourses(int[] selectedCourses, Teacher teacherToUpdate)
+        {
+            if (selectedCourses == null)
+            {
+                teacherToUpdate.CourseAssignments = new List<CourseAssignment>();
+                return;
+            }
+
+            var selectedCoursesHS = new HashSet<int>(selectedCourses);
+            var instructorCourses = new HashSet<int>
+                (teacherToUpdate.CourseAssignments.Select(c => c.Course.Id));
+            foreach (var course in _context.Courses)
+            {
+                if (selectedCoursesHS.Contains(course.Id))
+                {
+                    if (!instructorCourses.Contains(course.Id))
+                    {
+                        teacherToUpdate.CourseAssignments.Add(new CourseAssignment { TeacherId = teacherToUpdate.Id, CourseId = course.Id });
+                    }
+                }
+                else
+                {
+
+                    if (instructorCourses.Contains(course.Id))
+                    {
+                        CourseAssignment courseToRemove = teacherToUpdate.CourseAssignments.FirstOrDefault(i => i.CourseId == course.Id);
+                        _context.Remove(courseToRemove);
+                    }
+                }
+            }
         }
 
         // GET: Teachers/Delete/5
@@ -139,8 +202,12 @@ namespace Priceless.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var teacher = await _context.Teachers.FindAsync(id);
+            var teacher = await _context.Teachers
+                .Include(i => i.CourseAssignments)
+                .SingleAsync(i => i.Id == id);
+
             _context.Teachers.Remove(teacher);
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
