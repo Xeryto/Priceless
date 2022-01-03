@@ -18,6 +18,7 @@ namespace Priceless
         public DbSet<Person> People { get; set; }
         public DbSet<Major> Majors { get; set; }
         public DbSet<Admission> Admissions { get; set; }
+        public DbSet<MajorAssignment> MajorAssignments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,8 @@ namespace Priceless
                 .HasKey(c => new { c.CourseId, c.StudentId });
             modelBuilder.Entity<Admission>()
                 .HasKey(c => new { c.MajorId, c.StudentId });
+            modelBuilder.Entity<MajorAssignment>()
+                .HasKey(c => new { c.MajorId, c.TeacherId });
         }
     }
 }
