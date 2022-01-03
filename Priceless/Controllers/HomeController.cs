@@ -60,10 +60,18 @@ namespace Priceless.Controllers
             if (await _service.Login(person.Login, person.Password))
             {
                 var commonPerson = await _service.GetByLogin(person.Login);
+                SqlConnection conn = new("Persist Security Info=False;User ID=igoshin;Password=-!Игошин!-;Initial Catalog=igoshin2;Server=78.29.44.70\\SQLSERVER");
+                conn.Open();
+                SqlCommand command = new("SELECT Discriminator FROM People WHERE Login = @login");
+                command.Connection = conn;
+                command.Parameters.AddWithValue("@login", person.Login);
+                string role = command.ExecuteScalar().ToString();
+                conn.Close();
                 PersonCacheModel personCache = new()
                 {
                     Id = commonPerson.Id,
-                    Image = commonPerson.Image
+                    Image = commonPerson.Image,
+                    Role = role
                 };
                 WebCache.Set("LoggedIn", personCache, 60, true);
                 return RedirectToAction("Index", "Home");

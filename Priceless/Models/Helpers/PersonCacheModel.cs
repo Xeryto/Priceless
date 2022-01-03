@@ -5,5 +5,6 @@ namespace Priceless.Models.Helpers
     {
         public int Id { get; set; }
         public byte[] Image { get; set; }
+        public string Role { get; set; }
     }
 }
