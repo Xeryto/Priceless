@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Priceless.Models
+namespace Priceless.Models.Helpers
 {
     public class AssignedCourseData
     {
