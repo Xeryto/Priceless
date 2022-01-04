@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
 namespace Priceless.Models.Helpers
 {
-    public class StudentPostModel : Student
+    public class TeacherPostModel : Teacher
     {
         public IFormFile Image { get; set; }
     }

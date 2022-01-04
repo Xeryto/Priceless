@@ -8,12 +8,17 @@ using Microsoft.EntityFrameworkCore;
 using Priceless.Models.Helpers;
 using Priceless.Models;
 using System.Security.Cryptography;
+using AutoMapper;
+using System.IO;
+using System.Web.Helpers;
 
 namespace Priceless.Controllers
 {
     public class TeachersController : Controller
     {
         private readonly PricelessContext _context;
+        private readonly MapperConfiguration config = new(cfg => cfg
+            .CreateMap<TeacherPostModel, Teacher>().ForMember("Image", opt => opt.Ignore()));
 
         public TeachersController(PricelessContext context)
         {
@@ -58,13 +63,22 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,FirstQA,SecondQA,ThirdQA,Image")] Teacher teacher, int[] selectedMajors)
+        public async Task<IActionResult> Create([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,FirstQA,SecondQA,ThirdQA,Image")] TeacherPostModel teacherPost, int[] selectedMajors)
         {
+            var mapper = new Mapper(config);
+            var teacher = mapper.Map<TeacherPostModel, Teacher>(teacherPost);
             teacher.MajorAssignments = new List<MajorAssignment>();
             if (ModelState.IsValid)
             {
                 if (! _context.People.Any(p => p.Login == teacher.Login))
                 {
+                    if (teacherPost.Image != null)
+                    {
+                        var stream = new MemoryStream();
+                        await teacherPost.Image.CopyToAsync(stream);
+                        teacher.Image = stream.ToArray();
+                    }
+
                     teacher.Password = Hash(teacher.Password);
                     teacher.Status = "In process";
                     AddTeacherMajors(selectedMajors, teacher);
@@ -79,6 +93,66 @@ namespace Priceless.Controllers
             }
             PopulateAssignedMajorData(teacher);
             return View(teacher);
+        }
+
+        public async Task<IActionResult> EditImage(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var teacher = await _context.Teachers
+                .Include(i => i.MajorAssignments).ThenInclude(i => i.Major)
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (teacher == null)
+            {
+                return NotFound();
+            }
+            var teacherEdit = new TeacherEditModel()
+            {
+                Id = teacher.Id
+            };
+            return View(teacherEdit);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditImage(int id, [Bind("Image")] TeacherEditModel teacherEdit)
+        {
+
+            if (ModelState.IsValid)
+            {
+                var teacher = await _context.Teachers
+                .Include(i => i.MajorAssignments).ThenInclude(i => i.Major)
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+                if (teacherEdit.Image != null)
+                {
+                    var stream = new MemoryStream();
+                    await teacherEdit.Image.CopyToAsync(stream);
+                    teacher.Image = stream.ToArray();
+                }
+
+                WebCache.Remove("LoggedIn");
+                PersonCacheModel userCache = new()
+                {
+                    Id = teacher.Id,
+                    Image = teacher.Image,
+                    Role = "Student"
+                };
+                WebCache.Set("LoggedIn", userCache, 60, true);
+                _context.Update(teacher);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            return View(teacherEdit);
         }
 
         // GET: Teachers/Edit/5
