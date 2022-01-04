@@ -11,6 +11,7 @@ using Priceless.Models;
 using System.Security.Cryptography;
 using System.IO;
 using System.Web.Helpers;
+using Microsoft.AspNetCore.Http;
 
 namespace Priceless.Controllers
 {
@@ -28,7 +29,7 @@ namespace Priceless.Controllers
         // GET: Students
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Students.ToListAsync());
+            return View(await _context.Students.Where(s => s.Status == "In process").ToListAsync());
         }
 
         // GET: Students/Details/5
@@ -88,11 +89,11 @@ namespace Priceless.Controllers
                 }
                 else
                 {
-                    return View(student);
+                    return View(studentPost);
                 }
             }
             PopulateAssignedMajorData(student);
-            return View(student);
+            return View(studentPost);
         }
 
         public async Task<IActionResult> EditImage(int? id)
@@ -317,6 +318,34 @@ namespace Priceless.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Admit(int id, int userId)
+        {
+            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
+            var admittedPerson = _context.Students.FirstOrDefault(i => i.Id == id);
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            {
+                admittedPerson.Status = "Admitted";
+                _context.Update(admittedPerson);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        public async Task<IActionResult> Reject(int id, int userId)
+        {
+            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
+            var admittedPerson = _context.Students.FirstOrDefault(i => i.Id == id);
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            {
+                admittedPerson.Status = "Rejected";
+                _context.Update(admittedPerson);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
         }
 
         private bool StudentExists(int id)
