@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Priceless.Models.Helpers;
 using Priceless.Models;
 using System.Security.Cryptography;
+using System.IO;
+using System.Web.Helpers;
 
 namespace Priceless.Controllers
 {
@@ -16,7 +18,7 @@ namespace Priceless.Controllers
     {
         private readonly PricelessContext _context;
         private readonly MapperConfiguration config = new(cfg => cfg
-        .CreateMap<StudentPostModel, Student>().ForMember("Image", opt => opt.Ignore()));
+            .CreateMap<StudentPostModel, Student>().ForMember("Image", opt => opt.Ignore()));
 
         public StudentsController(PricelessContext context)
         {
@@ -61,28 +63,22 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,ParentName,Phone,ParentPhone,City,FirstQA,SecondQA")] Student student, int[] selectedMajors)
+        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,ParentName,Phone,ParentPhone,City,FirstQA,SecondQA,Image")] StudentPostModel studentPost, int[] selectedMajors)
         {
-            //var mapper = new Mapper(config);
-            //var student = mapper.Map<StudentPostModel, Student>(studentPost);
+            var mapper = new Mapper(config);
+            var student = mapper.Map<StudentPostModel, Student>(studentPost);
             student.Admissions = new List<Admission>();
             if (ModelState.IsValid)
             {
                 if (!_context.People.Any(p => p.Login == student.Login))
                 {
-                    /*if (studentPost.Image != null)
+                    if (studentPost.Image != null)
                     {
                         var stream = new MemoryStream();
                         await studentPost.Image.CopyToAsync(stream);
                         student.Image = stream.ToArray();
                     }
 
-                    PersonCacheModel userCache = new()
-                    {
-                        Id = student.Id,
-                        Image = student.Image
-                    };
-                    WebCache.Set("LoggedIn", userCache, 60, true);*/
                     student.Password = Hash(student.Password);
                     student.Status = "In process";
                     AddStudentMajors(selectedMajors, student);
@@ -114,41 +110,47 @@ namespace Priceless.Controllers
             {
                 return NotFound();
             }
-            PopulateAssignedMajorData(student);
-            return View(student);
+            var studentEdit = new StudentEditModel()
+            {
+                Id = (int)id
+            };
+            return View(studentEdit);
         }
 
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditImage(int id, [Bind("Image")] Student student)
+        public async Task<IActionResult> EditImage(int id, [Bind("Image")] StudentEditModel studentEdit)
         {
-            if (id != student.Id)
-            {
-                return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
-                try
+                var student = await _context.Students
+                .Include(i => i.Admissions).ThenInclude(i => i.Major)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+                if (studentEdit.Image != null)
                 {
-                    _context.Update(student);
-                    await _context.SaveChangesAsync();
+                    var stream = new MemoryStream();
+                    await studentEdit.Image.CopyToAsync(stream);
+                    student.Image = stream.ToArray();
                 }
-                catch (DbUpdateConcurrencyException)
+
+                WebCache.Remove("LoggedIn");
+                PersonCacheModel userCache = new()
                 {
-                    if (!StudentExists(student.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                    Id = student.Id,
+                    Image = student.Image,
+                    Role = "Student"
+                };
+                WebCache.Set("LoggedIn", userCache, 60, true);
+                _context.Update(student);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(student);
+            return View(studentEdit);
         }
 
         // GET: Students/Edit/5
