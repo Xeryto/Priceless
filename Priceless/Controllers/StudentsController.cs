@@ -61,10 +61,11 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,Image,Parent,Phone,ParentPhone,City,FirstQA,SecondQA")] Student student)
+        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,ParentName,Phone,ParentPhone,City,FirstQA,SecondQA")] Student student, int[] selectedMajors)
         {
             //var mapper = new Mapper(config);
             //var student = mapper.Map<StudentPostModel, Student>(studentPost);
+            student.Admissions = new List<Admission>();
             if (ModelState.IsValid)
             {
                 if (!_context.People.Any(p => p.Login == student.Login))
@@ -83,6 +84,8 @@ namespace Priceless.Controllers
                     };
                     WebCache.Set("LoggedIn", userCache, 60, true);*/
                     student.Password = Hash(student.Password);
+                    student.Status = "In process";
+                    AddStudentMajors(selectedMajors, student);
                     _context.Add(student);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -242,22 +245,40 @@ namespace Priceless.Controllers
             var selectedMajorsHS = new HashSet<int>(selectedMajors);
             var studentCourses = new HashSet<int>
                 (studentToUpdate.Admissions.Select(c => c.Major.Id));
-            foreach (var course in _context.Courses)
+            foreach (var major in _context.Majors)
             {
-                if (selectedMajorsHS.Contains(course.Id))
+                if (selectedMajorsHS.Contains(major.Id))
                 {
-                    if (!studentCourses.Contains(course.Id))
+                    if (!studentCourses.Contains(major.Id))
                     {
-                        studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = course.Id });
+                        studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = major.Id });
                     }
                 }
                 else
                 {
-                    if (studentCourses.Contains(course.Id))
+                    if (studentCourses.Contains(major.Id))
                     {
-                        Admission AdmissionToRemove = studentToUpdate.Admissions.FirstOrDefault(i => i.MajorId == course.Id);
+                        Admission AdmissionToRemove = studentToUpdate.Admissions.FirstOrDefault(i => i.MajorId == major.Id);
                         _context.Remove(AdmissionToRemove);
                     }
+                }
+            }
+        }
+
+        private void AddStudentMajors(int[] selectedMajors, Student studentToUpdate)
+        {
+            if (selectedMajors == null)
+            {
+                studentToUpdate.Admissions = new List<Admission>();
+                return;
+            }
+
+            var selectedMajorsHS = new HashSet<int>(selectedMajors);
+            foreach (var major in _context.Majors)
+            {
+                if (selectedMajorsHS.Contains(major.Id))
+                {
+                    studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = major.Id });
                 }
             }
         }

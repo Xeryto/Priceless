@@ -23,7 +23,7 @@ namespace Priceless.Controllers
         // GET: Teachers
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Teachers.ToListAsync());
+            return View(await _context.Teachers.Where(t => t.Status != "Admitted").ToListAsync());
         }
 
         // GET: Teachers/Details/5
@@ -58,13 +58,16 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Login,Password,Name,Image")] Teacher teacher)
+        public async Task<IActionResult> Create([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,FirstQA,SecondQA,ThirdQA,Image")] Teacher teacher, int[] selectedMajors)
         {
+            teacher.MajorAssignments = new List<MajorAssignment>();
             if (ModelState.IsValid)
             {
                 if (! _context.People.Any(p => p.Login == teacher.Login))
                 {
                     teacher.Password = Hash(teacher.Password);
+                    teacher.Status = "In process";
+                    AddTeacherMajors(selectedMajors, teacher);
                     _context.Add(teacher);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -88,6 +91,8 @@ namespace Priceless.Controllers
 
             var teacher = await _context.Teachers
                 .Include(i => i.MajorAssignments).ThenInclude(i => i.Major)
+                //.AsNoTracking()
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (teacher == null)
@@ -95,13 +100,14 @@ namespace Priceless.Controllers
                 return NotFound();
             }
             PopulateAssignedMajorData(teacher);
+            PopulateAssignedCourseData(teacher);
             return View(teacher);
         }
 
         private void PopulateAssignedMajorData(Teacher teacher)
         {
             var allMajors = _context.Majors;
-            var instructorMajors = new HashSet<int>(teacher.MajorAssignments.Select(c => c.MajorId));
+            var teacherMajors = new HashSet<int>(teacher.MajorAssignments.Select(c => c.MajorId));
             var viewModel = new List<AssignedMajorData>();
             foreach (var Major in allMajors)
             {
@@ -109,10 +115,27 @@ namespace Priceless.Controllers
                 {
                     MajorId = Major.Id,
                     Title = Major.Title,
-                    Assigned = instructorMajors.Contains(Major.Id)
+                    Assigned = teacherMajors.Contains(Major.Id)
                 });
             }
             ViewData["Majors"] = viewModel;
+        }
+
+        private void PopulateAssignedCourseData(Teacher teacher)
+        {
+            var allCourse = _context.Courses;
+            var teacherCourses = new HashSet<int>(teacher.CourseAssignments.Select(c => c.CourseId));
+            var viewModel = new List<AssignedCourseData>();
+            foreach (var course in allCourse)
+            {
+                viewModel.Add(new AssignedCourseData
+                {
+                    CourseId = course.Id,
+                    Title = course.Title,
+                    Assigned = teacherCourses.Contains(course.Id)
+                });
+            }
+            ViewData["Courses"] = viewModel;
         }
 
         // POST: Teachers/Edit/5
@@ -120,7 +143,7 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, int[] selectedMajors)
+        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, int[] selectedCourses)
         {
             if (id == null)
             {
@@ -130,13 +153,15 @@ namespace Priceless.Controllers
             var teacherToUpdate = await _context.Teachers
                 .Include(i => i.MajorAssignments)
                     .ThenInclude(i => i.Major)
+                .Include(i => i.CourseAssignments)
+                    .ThenInclude(i => i.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
             var pass = teacherToUpdate.Password;
 
             if (await TryUpdateModelAsync<Teacher>(
                 teacherToUpdate,
                 "",
-                i => i.Name, i => i.Password))
+                i => i.Name, i => i.Password, i => i.Phone, i => i.VK, i => i.Grade, i => i.School))
             {
                 if (teacherToUpdate.Password != null)
                 {
@@ -147,6 +172,7 @@ namespace Priceless.Controllers
                     teacherToUpdate.Password = pass;
                 }
                 UpdateTeacherMajors(selectedMajors, teacherToUpdate);
+                UpdateTeacherCourses(selectedCourses, teacherToUpdate);
                 try
                 {
                     await _context.SaveChangesAsync();
@@ -161,8 +187,42 @@ namespace Priceless.Controllers
                 return RedirectToAction(nameof(Index));
             }
             UpdateTeacherMajors(selectedMajors, teacherToUpdate);
+            UpdateTeacherCourses(selectedCourses, teacherToUpdate);
             PopulateAssignedMajorData(teacherToUpdate);
+            PopulateAssignedCourseData(teacherToUpdate);
             return View(teacherToUpdate);
+        }
+
+        private void UpdateTeacherCourses(int[] selectedCourses, Teacher teacherToUpdate)
+        {
+            if (selectedCourses == null)
+            {
+                teacherToUpdate.CourseAssignments = new List<CourseAssignment>();
+                return;
+            }
+
+            var selectedCoursesHS = new HashSet<int>(selectedCourses);
+            var teacherCourses = new HashSet<int>
+                (teacherToUpdate.CourseAssignments.Select(c => c.Course.Id));
+            foreach (var course in _context.Courses)
+            {
+                if (selectedCoursesHS.Contains(course.Id))
+                {
+                    if (!teacherCourses.Contains(course.Id))
+                    {
+                        teacherToUpdate.CourseAssignments.Add(new CourseAssignment { TeacherId = teacherToUpdate.Id, CourseId = course.Id });
+                    }
+                }
+                else
+                {
+
+                    if (teacherCourses.Contains(course.Id))
+                    {
+                        CourseAssignment CourseToRemove = teacherToUpdate.CourseAssignments.FirstOrDefault(i => i.CourseId == course.Id);
+                        _context.Remove(CourseToRemove);
+                    }
+                }
+            }
         }
 
         private void UpdateTeacherMajors(int[] selectedMajors, Teacher teacherToUpdate)
@@ -174,13 +234,13 @@ namespace Priceless.Controllers
             }
 
             var selectedMajorsHS = new HashSet<int>(selectedMajors);
-            var instructorMajors = new HashSet<int>
+            var teacherMajors = new HashSet<int>
                 (teacherToUpdate.MajorAssignments.Select(c => c.Major.Id));
             foreach (var Major in _context.Majors)
             {
                 if (selectedMajorsHS.Contains(Major.Id))
                 {
-                    if (!instructorMajors.Contains(Major.Id))
+                    if (!teacherMajors.Contains(Major.Id))
                     {
                         teacherToUpdate.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToUpdate.Id, MajorId = Major.Id });
                     }
@@ -188,11 +248,29 @@ namespace Priceless.Controllers
                 else
                 {
 
-                    if (instructorMajors.Contains(Major.Id))
+                    if (teacherMajors.Contains(Major.Id))
                     {
                         MajorAssignment MajorToRemove = teacherToUpdate.MajorAssignments.FirstOrDefault(i => i.MajorId == Major.Id);
                         _context.Remove(MajorToRemove);
                     }
+                }
+            }
+        }
+
+        private void AddTeacherMajors(int[] selectedMajors, Teacher teacherToAdd)
+        {
+            if (selectedMajors == null)
+            {
+                teacherToAdd.MajorAssignments = new List<MajorAssignment>();
+                return;
+            }
+
+            var selectedMajorsHS = new HashSet<int>(selectedMajors);
+            foreach (var Major in _context.Majors)
+            {
+                if (selectedMajorsHS.Contains(Major.Id))
+                {
+                    teacherToAdd.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToAdd.Id, MajorId = Major.Id });
                 }
             }
         }
@@ -222,6 +300,7 @@ namespace Priceless.Controllers
         {
             var teacher = await _context.Teachers
                 .Include(i => i.MajorAssignments)
+                .Include(i => i.CourseAssignments)
                 .SingleAsync(i => i.Id == id);
 
             _context.Teachers.Remove(teacher);
