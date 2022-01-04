@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using AutoMapper;
 using System.IO;
 using System.Web.Helpers;
+using Microsoft.AspNetCore.Http;
 
 namespace Priceless.Controllers
 {
@@ -19,6 +20,7 @@ namespace Priceless.Controllers
         private readonly PricelessContext _context;
         private readonly MapperConfiguration config = new(cfg => cfg
             .CreateMap<TeacherPostModel, Teacher>().ForMember("Image", opt => opt.Ignore()));
+        private readonly string code = Hash("*");
 
         public TeachersController(PricelessContext context)
         {
@@ -28,7 +30,7 @@ namespace Priceless.Controllers
         // GET: Teachers
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Teachers.Where(t => t.Status != "Admitted").ToListAsync());
+            return View(await _context.Teachers.Where(t => t.Status == "In process").ToListAsync());
         }
 
         // GET: Teachers/Details/5
@@ -47,6 +49,46 @@ namespace Priceless.Controllers
             }
 
             return View(teacher);
+        }
+
+        public IActionResult CreateAdmin()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAdmin([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,Image")] TeacherPostModel teacherPost, int[] selectedMajors, string Code)
+        {
+            var mapper = new Mapper(config);
+            var teacher = mapper.Map<TeacherPostModel, Teacher>(teacherPost);
+            teacher.MajorAssignments = new List<MajorAssignment>();
+            if (ModelState.IsValid)
+            {
+                if (!_context.People.Any(p => p.Login == teacher.Login) && VerifyHashed(code, Code))
+                {
+                    if (teacherPost.Image != null)
+                    {
+                        var stream = new MemoryStream();
+                        await teacherPost.Image.CopyToAsync(stream);
+                        teacher.Image = stream.ToArray();
+                    }
+
+                    teacher.Password = Hash(teacher.Password);
+                    teacher.Status = "Admitted";
+                    AddTeacherMajors(selectedMajors, teacher);
+                    _context.Add(teacher);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    return View(teacherPost);
+                }
+            }
+            PopulateAssignedMajorData(teacher);
+            return View(teacherPost);
         }
 
         // GET: Teachers/Create
@@ -88,11 +130,11 @@ namespace Priceless.Controllers
                 }
                 else
                 {
-                    return View(teacher);
+                    return View(teacherPost);
                 }
             }
             PopulateAssignedMajorData(teacher);
-            return View(teacher);
+            return View(teacherPost);
         }
 
         public async Task<IActionResult> EditImage(int? id)
@@ -383,6 +425,34 @@ namespace Priceless.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> Admit(int id, int userId)
+        {
+            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
+            var admittedPerson = _context.Teachers.FirstOrDefault(i => i.Id == id);
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            {
+                admittedPerson.Status = "Admitted";
+                _context.Update(admittedPerson);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        public async Task<IActionResult> Reject(int id, int userId)
+        {
+            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
+            var admittedPerson = _context.Teachers.FirstOrDefault(i => i.Id == id);
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            {
+                admittedPerson.Status = "Rejected";
+                _context.Update(admittedPerson);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
         private bool TeacherExists(int id)
         {
             return _context.Teachers.Any(e => e.Id == id);
@@ -405,6 +475,45 @@ namespace Priceless.Controllers
             Buffer.BlockCopy(salt, 0, dst, 1, 0x10);
             Buffer.BlockCopy(buffer2, 0, dst, 0x11, 0x20);
             return Convert.ToBase64String(dst);
+        }
+
+        private static bool VerifyHashed(string hashedPassword, string password)
+        {
+            byte[] buffer4;
+            if (hashedPassword == null)
+            {
+                return false;
+            }
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            byte[] src = Convert.FromBase64String(hashedPassword);
+            if ((src.Length != 0x31) || (src[0] != 0))
+            {
+                return false;
+            }
+            byte[] dst = new byte[0x10];
+            Buffer.BlockCopy(src, 1, dst, 0, 0x10);
+            byte[] buffer3 = new byte[0x20];
+            Buffer.BlockCopy(src, 0x11, buffer3, 0, 0x20);
+            using (Rfc2898DeriveBytes bytes = new(password, dst, 0x3e8))
+            {
+                buffer4 = bytes.GetBytes(0x20);
+            }
+            return ByteArraysEqual(buffer3, buffer4);
+        }
+
+        private static bool ByteArraysEqual(byte[] b1, byte[] b2)
+        {
+            if (b1 == b2) return true;
+            if (b1 == null || b2 == null) return false;
+            if (b1.Length != b2.Length) return false;
+            for (int i = 0; i < b1.Length; i++)
+            {
+                if (b1[i] != b2[i]) return false;
+            }
+            return true;
         }
     }
 }
