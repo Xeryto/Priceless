@@ -151,7 +151,6 @@ namespace Priceless.Controllers
                     };
                     WebCache.Set("LoggedIn", userCache, 60, true);
                 }
-                WebCache.Set("LoggedIn", userCache, 60, true);
                 _context.Update(student);
                 await _context.SaveChangesAsync();
 
