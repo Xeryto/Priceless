@@ -10,12 +10,12 @@ using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Priceless.Models;
-
 using Excel = Microsoft.Office.Interop.Excel;
 using ExcelAutoFormat = Microsoft.Office.Interop.Excel.XlRangeAutoFormat;
 using Priceless.Models.Helpers;
 using Priceless.Services;
 using System.Web.Helpers;
+using Npgsql;
 
 namespace Priceless.Controllers
 {
@@ -60,9 +60,9 @@ namespace Priceless.Controllers
             if (await _service.Login(person.Login, person.Password))
             {
                 var commonPerson = await _service.GetByLogin(person.Login);
-                SqlConnection conn = new("*");
+                NpgsqlConnection conn = new("Server=localhost;Port=5432;Database=postgres;User Id=goldp1");
                 conn.Open();
-                SqlCommand command = new("SELECT Discriminator FROM People WHERE Login = @login");
+                NpgsqlCommand command = new("SELECT "+'"'+"Discriminator"+'"'+" FROM "+'"'+"People"+'"'+" WHERE "+'"'+"Login"+'"'+" = @login");
                 command.Connection = conn;
                 command.Parameters.AddWithValue("@login", person.Login);
                 string role = command.ExecuteScalar().ToString();

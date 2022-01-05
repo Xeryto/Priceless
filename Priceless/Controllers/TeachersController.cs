@@ -181,18 +181,12 @@ namespace Priceless.Controllers
                     teacher.Image = stream.ToArray();
                 }
 
-                var editor = WebCache.Get("LoggedIn");
-                if (editor.id == id)
+                PersonCacheModel editor = WebCache.Get("LoggedIn");
+                if (editor.Id == id)
                 {
                     WebCache.Remove("LoggedIn");
-                    PersonCacheModel userCache = new()
-                    {
-                        Id = teacher.Id,
-                        Image = teacher.Image,
-                        Role = "Student",
-                        Status = teacher.Status
-                    };
-                    WebCache.Set("LoggedIn", userCache, 60, true);
+                    editor.Image = teacher.Image;
+                    WebCache.Set("LoggedIn", editor, 60, true);
                 }
                 _context.Update(teacher);
                 await _context.SaveChangesAsync();
@@ -314,19 +308,6 @@ namespace Priceless.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
-                    var editor = WebCache.Get("LoggedIn");
-                    if (editor.id == id)
-                    {
-                        WebCache.Remove("LoggedIn");
-                        PersonCacheModel userCache = new()
-                        {
-                            Id = teacherToUpdate.Id,
-                            Image = teacherToUpdate.Image,
-                            Role = "Student",
-                            Status = teacherToUpdate.Status
-                        };
-                        WebCache.Set("LoggedIn", userCache, 60, true);
-                    }
                 }
                 catch (DbUpdateException /* ex */)
                 {
@@ -454,8 +435,8 @@ namespace Priceless.Controllers
                 .Include(i => i.CourseAssignments)
                 .SingleAsync(i => i.Id == id);
 
-            var editor = WebCache.Get("LoggedIn");
-            if (editor.id == id)
+            PersonCacheModel editor = WebCache.Get("LoggedIn");
+            if (editor.Id == id)
             {
                 WebCache.Remove("LoggedIn");
             }

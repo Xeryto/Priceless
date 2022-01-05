@@ -50,6 +50,7 @@ namespace Priceless.Controllers
         public IActionResult Create()
         {
             var course = new Course();
+            course.CourseAssignments = new List<CourseAssignment>();
             course.Enrollments = new List<Enrollment>();
             PopulateAssignedStudentData(course);
             PopulateAssignedTeacherData(course);
