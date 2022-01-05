@@ -56,7 +56,7 @@
                                                 @{
                                                     if (logged.Image == null)
                                                     {
-                                                        <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" height="60" width="6 0" />
+                                                        <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" height="60" width="60" />
 
                                                     }
                                                     else
@@ -66,16 +66,17 @@
                                                 }
                                             </a>
                                             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                                <a class="dropdown-item" asp-controller="Home" asp-action="PersonPage">Profile</a>
                                                 <a class="dropdown-item" asp-controller="Home" asp-action="Logout">Log out</a>
                                                 @{
                                                     if (logged.Role == "Student")
                                                     {
+                                                        <a class="dropdown-item" asp-controller="Students" asp-action="Details" asp-route-id="@logged.Id">Profile</a>
                                                         <a class="dropdown-item" asp-controller="Students" asp-action="Edit" asp-route-id="@logged.Id">Edit</a>
                                                         <a class="dropdown-item" asp-controller="Students" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Delete</a>
                                                     }
                                                     else if (logged.Role == "Teacher")
                                                     {
+                                                        <a class="dropdown-item" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Profile</a>
                                                         <a class="dropdown-item" asp-controller="Teachers" asp-action="Edit" asp-route-id="@logged.Id">Edit</a>
                                                         <a class="dropdown-item" asp-controller="Teachers" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Delete</a>
                                                     }

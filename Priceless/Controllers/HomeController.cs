@@ -71,7 +71,8 @@ namespace Priceless.Controllers
                 {
                     Id = commonPerson.Id,
                     Image = commonPerson.Image,
-                    Role = role
+                    Role = role,
+                    Status = commonPerson.Status
                 };
                 WebCache.Set("LoggedIn", personCache, 60, true);
                 return RedirectToAction("Index", "Home");
@@ -83,11 +84,6 @@ namespace Priceless.Controllers
         }
 
         public IActionResult Register()
-        {
-            return View();
-        }
-
-        public IActionResult PersonPage()
         {
             return View();
         }

@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Priceless;
 using Priceless.Models;
+using Priceless.Models.Helpers;
 
 namespace Priceless.Controllers
 {
@@ -78,6 +81,7 @@ namespace Priceless.Controllers
             {
                 return NotFound();
             }
+
             return View(major);
         }
 
@@ -139,7 +143,11 @@ namespace Priceless.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var major = await _context.Majors.FindAsync(id);
+            var major = await _context.Majors
+                .Include(i => i.Admissions)
+                .Include(i => i.MajorAssignments)
+                .SingleAsync(i => i.Id == id);
+
             _context.Majors.Remove(major);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
