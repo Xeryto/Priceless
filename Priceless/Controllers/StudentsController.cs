@@ -138,18 +138,12 @@ namespace Priceless.Controllers
                     student.Image = stream.ToArray();
                 }
 
-                var editor = WebCache.Get("LoggedIn");
-                if (editor.id == id)
+                PersonCacheModel editor = WebCache.Get("LoggedIn");
+                if (editor.Id == id)
                 {
                     WebCache.Remove("LoggedIn");
-                    PersonCacheModel userCache = new()
-                    {
-                        Id = student.Id,
-                        Image = student.Image,
-                        Role = "Student",
-                        Status = student.Status
-                    };
-                    WebCache.Set("LoggedIn", userCache, 60, true);
+                    editor.Image = student.Image;
+                    WebCache.Set("LoggedIn", editor, 60, true);
                 }
                 _context.Update(student);
                 await _context.SaveChangesAsync();
@@ -227,19 +221,6 @@ namespace Priceless.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
-                    var editor = WebCache.Get("LoggedIn");
-                    if (editor.id == id)
-                    {
-                        WebCache.Remove("LoggedIn");
-                        PersonCacheModel userCache = new()
-                        {
-                            Id = studentToUpdate.Id,
-                            Image = studentToUpdate.Image,
-                            Role = "Student",
-                            Status = studentToUpdate.Status
-                        };
-                        WebCache.Set("LoggedIn", userCache, 60, true);
-                    }
                 }
                 catch (DbUpdateException /* ex */)
                 {
