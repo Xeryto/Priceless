@@ -138,13 +138,19 @@ namespace Priceless.Controllers
                     student.Image = stream.ToArray();
                 }
 
-                WebCache.Remove("LoggedIn");
-                PersonCacheModel userCache = new()
+                var editor = WebCache.Get("LoggedIn");
+                if (editor.id == id)
                 {
-                    Id = student.Id,
-                    Image = student.Image,
-                    Role = "Student"
-                };
+                    WebCache.Remove("LoggedIn");
+                    PersonCacheModel userCache = new()
+                    {
+                        Id = student.Id,
+                        Image = student.Image,
+                        Role = "Student",
+                        Status = student.Status
+                    };
+                    WebCache.Set("LoggedIn", userCache, 60, true);
+                }
                 WebCache.Set("LoggedIn", userCache, 60, true);
                 _context.Update(student);
                 await _context.SaveChangesAsync();
@@ -222,6 +228,19 @@ namespace Priceless.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+                    var editor = WebCache.Get("LoggedIn");
+                    if (editor.id == id)
+                    {
+                        WebCache.Remove("LoggedIn");
+                        PersonCacheModel userCache = new()
+                        {
+                            Id = studentToUpdate.Id,
+                            Image = studentToUpdate.Image,
+                            Role = "Student",
+                            Status = studentToUpdate.Status
+                        };
+                        WebCache.Set("LoggedIn", userCache, 60, true);
+                    }
                 }
                 catch (DbUpdateException /* ex */)
                 {
@@ -314,8 +333,14 @@ namespace Priceless.Controllers
                  .Include(i => i.Admissions)
                  .SingleAsync(i => i.Id == id);
 
-            _context.Students.Remove(student);
+            
+            var editor = WebCache.Get("LoggedIn");
+            if (editor.id == id)
+            {
+                WebCache.Remove("LoggedIn");
+            }
 
+            _context.Students.Remove(student);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -324,7 +349,7 @@ namespace Priceless.Controllers
         {
             var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
             var admittedPerson = _context.Students.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
             {
                 admittedPerson.Status = "Admitted";
                 _context.Update(admittedPerson);
@@ -338,7 +363,7 @@ namespace Priceless.Controllers
         {
             var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
             var admittedPerson = _context.Students.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
             {
                 admittedPerson.Status = "Rejected";
                 _context.Update(admittedPerson);

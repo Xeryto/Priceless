@@ -76,7 +76,7 @@ namespace Priceless.Controllers
                     }
 
                     teacher.Password = Hash(teacher.Password);
-                    teacher.Status = "Admitted";
+                    teacher.Status = "Admin";
                     AddTeacherMajors(selectedMajors, teacher);
                     _context.Add(teacher);
                     await _context.SaveChangesAsync();
@@ -181,14 +181,19 @@ namespace Priceless.Controllers
                     teacher.Image = stream.ToArray();
                 }
 
-                WebCache.Remove("LoggedIn");
-                PersonCacheModel userCache = new()
+                var editor = WebCache.Get("LoggedIn");
+                if (editor.id == id)
                 {
-                    Id = teacher.Id,
-                    Image = teacher.Image,
-                    Role = "Student"
-                };
-                WebCache.Set("LoggedIn", userCache, 60, true);
+                    WebCache.Remove("LoggedIn");
+                    PersonCacheModel userCache = new()
+                    {
+                        Id = teacher.Id,
+                        Image = teacher.Image,
+                        Role = "Student",
+                        Status = teacher.Status
+                    };
+                    WebCache.Set("LoggedIn", userCache, 60, true);
+                }
                 _context.Update(teacher);
                 await _context.SaveChangesAsync();
 
@@ -216,7 +221,7 @@ namespace Priceless.Controllers
                 return NotFound();
             }
             PopulateAssignedMajorData(teacher);
-            PopulateAssignedCourseData(teacher);
+            PopulateCurrentCourseData(teacher);
             return View(teacher);
         }
 
@@ -240,6 +245,23 @@ namespace Priceless.Controllers
         private void PopulateAssignedCourseData(Teacher teacher)
         {
             var allCourse = _context.Courses;
+            var teacherCourses = new HashSet<int>(teacher.CourseAssignments.Select(c => c.CourseId));
+            var viewModel = new List<AssignedCourseData>();
+            foreach (var course in allCourse)
+            {
+                viewModel.Add(new AssignedCourseData
+                {
+                    CourseId = course.Id,
+                    Title = course.Title,
+                    Assigned = teacherCourses.Contains(course.Id)
+                });
+            }
+            ViewData["Courses"] = viewModel;
+        }
+
+        private void PopulateCurrentCourseData(Teacher teacher)
+        {
+            var allCourse = teacher.CourseAssignments.Select(c => c.Course);
             var teacherCourses = new HashSet<int>(teacher.CourseAssignments.Select(c => c.CourseId));
             var viewModel = new List<AssignedCourseData>();
             foreach (var course in allCourse)
@@ -292,6 +314,19 @@ namespace Priceless.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+                    var editor = WebCache.Get("LoggedIn");
+                    if (editor.id == id)
+                    {
+                        WebCache.Remove("LoggedIn");
+                        PersonCacheModel userCache = new()
+                        {
+                            Id = teacherToUpdate.Id,
+                            Image = teacherToUpdate.Image,
+                            Role = "Student",
+                            Status = teacherToUpdate.Status
+                        };
+                        WebCache.Set("LoggedIn", userCache, 60, true);
+                    }
                 }
                 catch (DbUpdateException /* ex */)
                 {
@@ -305,7 +340,7 @@ namespace Priceless.Controllers
             UpdateTeacherMajors(selectedMajors, teacherToUpdate);
             UpdateTeacherCourses(selectedCourses, teacherToUpdate);
             PopulateAssignedMajorData(teacherToUpdate);
-            PopulateAssignedCourseData(teacherToUpdate);
+            PopulateCurrentCourseData(teacherToUpdate);
             return View(teacherToUpdate);
         }
 
@@ -419,6 +454,12 @@ namespace Priceless.Controllers
                 .Include(i => i.CourseAssignments)
                 .SingleAsync(i => i.Id == id);
 
+            var editor = WebCache.Get("LoggedIn");
+            if (editor.id == id)
+            {
+                WebCache.Remove("LoggedIn");
+            }
+
             _context.Teachers.Remove(teacher);
 
             await _context.SaveChangesAsync();
@@ -429,7 +470,7 @@ namespace Priceless.Controllers
         {
             var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
             var admittedPerson = _context.Teachers.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
             {
                 admittedPerson.Status = "Admitted";
                 _context.Update(admittedPerson);
@@ -443,7 +484,7 @@ namespace Priceless.Controllers
         {
             var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
             var admittedPerson = _context.Teachers.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admitted")
+            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
             {
                 admittedPerson.Status = "Rejected";
                 _context.Update(admittedPerson);
