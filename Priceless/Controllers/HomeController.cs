@@ -60,7 +60,7 @@ namespace Priceless.Controllers
             if (await _service.Login(person.Login, person.Password))
             {
                 var commonPerson = await _service.GetByLogin(person.Login);
-                SqlConnection conn = new("Persist Security Info=False;User ID=igoshin;Password=-!Игошин!-;Initial Catalog=igoshin2;Server=78.29.44.70\\SQLSERVER");
+                SqlConnection conn = new("*");
                 conn.Open();
                 SqlCommand command = new("SELECT Discriminator FROM People WHERE Login = @login");
                 command.Connection = conn;
