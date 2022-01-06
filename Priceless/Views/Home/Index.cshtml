@@ -2,7 +2,88 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row">
+    <div class="col-md-2" style="text-align:center">
+        <img src="~/img/logo2.png" alt="logo2" style="max-width: 100%;" class="helper"/>
+    </div>
+    <div class="col-md-8">
+        <h1 style="font-size: 80px; text-align: center; color: #923631;">Priceless Education</h1>
+        <p style="font-size: 24px; text-align: center; color: #555555;">A unique educational project of students of the school "Letovo", which unites students from all over the country. We are students with a wealth of teaching experience, and we believe that our experience and love for what we do will help our peer students believe in themselves and realize their potential!</p>
+        <div class="container" style="margin: 30px 0;">
+            <div class="row">
+                <div class="col-md-6">
+                    <a asp-action="Create" asp-controller="Students" class="button-block" style="float: right; margin-right: 20px;">
+                        Admission
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a asp-action="About" asp-controller="Home" class="button-block" style="float: left; margin-left: 20px;">
+                        About us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2" style="text-align: center;">
+        <img src="~/img/logo2.png" alt="logo2" style="max-width:100%" class="helper"/>
+    </div>
+</div>
+<div class="row" style="background-color: #DCAC83;">
+    <div class="container">
+        <h1 class="h">Training programs</h1>
+        <hr class="splitter" />
+        <div class="container">
+            <div class="row">
+                @{
+                    List<Major> majors = ViewBag.Majors;
+
+                    int cnt = 0;
+                    int len = majors.Count();
+
+                    foreach (var major in majors)
+                    {
+                        cnt++;
+                        if (cnt % 3 == 1)
+                        {
+                        @:</div><div class="row">
+                            if (len - cnt == 0)
+                            {
+                                <div class="col-md-4"></div>
+                            }
+                            else if (len - cnt == 1)
+                            {
+                                <div class="col-md-2"></div>
+                            }
+                        }
+
+
+                        <div class="col-md-4">
+                            <div class="wsk-cp-product">
+                                <div class="wsk-cp-img">
+                                    @{
+                                        if (major.Image == null)
+                                        {
+                                            <img src="~/img/major.png" alt="courseImage" class="img-responsive" />
+                                        }
+                                        else
+                                        {
+                                            <img src="data:image; base64,@Convert.ToBase64String(major.Image)" alt="courseImage" class="img-responsive" />
+                                        }
+                                    }
+                                </div>
+                                <div class="wsk-cp-text">
+                                    <a class="category" asp-action="Create" asp-controller="Students">
+                                        <span>Записаться</span>
+                                    </a>
+                                    <div class="title-product">
+                                        <h3>@major.Title</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
 </div>

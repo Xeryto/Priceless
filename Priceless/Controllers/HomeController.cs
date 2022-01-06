@@ -23,17 +23,18 @@ namespace Priceless.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly PersonService _service;
+        private readonly HomeService _service;
 
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, PersonService service)
+        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, HomeService service)
         {
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
             _service = service;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
+            ViewData["Majors"] = await _service.GetAllMajors();
             return View();
         }
 
