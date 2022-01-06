@@ -36,7 +36,7 @@ namespace Priceless
             services.AddDbContext<PricelessContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
 
-            services.AddTransient(typeof(PersonService));
+            services.AddTransient(typeof(HomeService));
 
             services.AddControllersWithViews();
         }
