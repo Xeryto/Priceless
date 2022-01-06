@@ -19,9 +19,9 @@ a {
 }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff;
+    background-color: #baab94;
+    border-color: #1861ac;
 }
 
 /* Sticky footer styles
@@ -59,41 +59,55 @@ html {
 }
 
 body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+    background-color: #e6e5e1;
 }
 .footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px; /* Vertically center the text there */
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    line-height: 60px; /* Vertically center the text there */
+    background-color: #368f8b;
 }
 
-.col-md-1 {
-    border: 0.1rem solid black;
-    padding: 0px;
+.bg-custom {
+    background-color: #DCAC83;
 }
 
-.container-fluid {
-    margin-bottom: 1rem;
+.dropdown-item:hover {
+    background-color: #f3c0bd;
 }
 
-.shorten {
-    width: 6rem;
-    height: 3rem;
+.dropdown-menu {
+    background-color: #e69e9a;
+    padding: 0;
+    border-radius: 20px;
 }
 
-img {
-    max-width: 100%;
-    max-height: 100%;
+.dropdown-item:first-child {
+    border-radius: 20px 20px 0 0;
 }
 
-.details {
-    max-width: 50%;
-    max-height: 50%;
+.dropdown-item:last-child {
+    border-radius: 0 0 20px 20px;
 }
 
-.formMargin {
-    margin-top: 0.5rem;
+.rounded-circle {
+    max-height: 40px; 
 }
+
+.bg-custom-2 {
+    background-color: #f3c0bd;
+}
+
+.bg-custom-3 {
+    background-color: #e69e9a;
+}
+
+.exp {
+    margin: auto 20px;
+    color: #555555;
+}
+
