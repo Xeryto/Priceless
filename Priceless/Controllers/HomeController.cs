@@ -45,7 +45,9 @@ namespace Priceless.Controllers
 
         public IActionResult Logout()
         {
-            WebCache.Remove("LoggedIn");
+            string id;
+            HttpContext.Request.Cookies.TryGetValue("Id", out id);
+            WebCache.Remove("LoggedIn"+id);
             return RedirectToAction("Index", "Home");
         }
 
@@ -68,6 +70,15 @@ namespace Priceless.Controllers
                 command.Parameters.AddWithValue("@login", person.Login);
                 string role = command.ExecuteScalar().ToString();
                 conn.Close();
+                var cookieOptions = new Microsoft.AspNetCore.Http.CookieOptions()
+                {
+                    Path = "/",
+                    HttpOnly = false,
+                    IsEssential = true, //<- there
+                    Secure = true,
+                    Expires = DateTime.Now.AddMonths(1),
+                };
+                HttpContext.Response.Cookies.Append("Id", commonPerson.Id.ToString(), cookieOptions);
                 PersonCacheModel personCache = new()
                 {
                     Id = commonPerson.Id,
@@ -75,7 +86,7 @@ namespace Priceless.Controllers
                     Role = role,
                     Status = commonPerson.Status
                 };
-                WebCache.Set("LoggedIn", personCache, 60, true);
+                WebCache.Set("LoggedIn"+commonPerson.Id, personCache, 60, true);
                 return RedirectToAction("Index", "Home");
             }
             else return View(new PersonLoginModel()
