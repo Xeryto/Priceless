@@ -51,9 +51,11 @@ namespace Priceless.Controllers
         {
             var course = new Course();
             course.CourseAssignments = new List<CourseAssignment>();
+            string ids;
+            HttpContext.Request.Cookies.TryGetValue("Id", out ids);
             course.Enrollments = new List<Enrollment>();
             PopulateAssignedStudentData(course);
-            PopulateAssignedTeacherData(course);
+            PopulateAssignedTeacherData(course, int.Parse(ids));
             return View();
         }
 
@@ -89,6 +91,7 @@ namespace Priceless.Controllers
                 viewModel.Add(new AssignedStudentData
                 {
                     StudentId = student.Id,
+                    Login = student.Login,
                     Name = student.Name,
                     Assigned = courseStudents.Contains(student.Id)
                 });
@@ -96,19 +99,33 @@ namespace Priceless.Controllers
             ViewData["Students"] = viewModel;
         }
 
-        private void PopulateAssignedTeacherData(Course course)
+        private void PopulateAssignedTeacherData(Course course, int? include = null)
         {
             var allTeachers = _context.Teachers.Where(s => s.Status == "Admitted" || s.Status == "Admin");
             var courseTeachers = new HashSet<int>(course.CourseAssignments.Select(c => c.TeacherId));
             var viewModel = new List<AssignedTeacherData>();
             foreach (var teacher in allTeachers)
             {
-                viewModel.Add(new AssignedTeacherData
+                if (include != null && teacher.Id == include)
                 {
-                    TeacherId = teacher.Id,
-                    Name = teacher.Name,
-                    Assigned = courseTeachers.Contains(teacher.Id)
-                });
+                    viewModel.Add(new AssignedTeacherData
+                    {
+                        TeacherId = teacher.Id,
+                        Login = teacher.Login,
+                        Name = teacher.Name,
+                        Assigned = true
+                    });
+                }
+                else
+                {
+                    viewModel.Add(new AssignedTeacherData
+                    {
+                        TeacherId = teacher.Id,
+                        Login = teacher.Login,
+                        Name = teacher.Name,
+                        Assigned = courseTeachers.Contains(teacher.Id)
+                    });
+                }
             }
             ViewData["Teachers"] = viewModel;
         }
