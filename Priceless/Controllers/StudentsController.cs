@@ -326,8 +326,20 @@ namespace Priceless.Controllers
             {
                 admittedPerson.Status = "Admitted";
                 PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
-                personCache.Status = admittedPerson.Status;
-                WebCache.Remove("LoggedIn" + id.ToString());
+                if (personCache != null)
+                {
+                    personCache.Status = admittedPerson.Status;
+                    WebCache.Remove("LoggedIn" + id.ToString());
+                }
+                else
+                {
+                    personCache = new PersonCacheModel()
+                    {
+                        Id = id,
+                        Role = "Student",
+                        Status = admittedPerson.Status
+                    };
+                }
                 WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
                 _context.Update(admittedPerson);
                 await _context.SaveChangesAsync();
@@ -344,8 +356,20 @@ namespace Priceless.Controllers
             {
                 admittedPerson.Status = "Rejected";
                 PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
-                personCache.Status = admittedPerson.Status;
-                WebCache.Remove("LoggedIn" + id.ToString());
+                if (personCache != null)
+                {
+                    personCache.Status = admittedPerson.Status;
+                    WebCache.Remove("LoggedIn" + id.ToString());
+                }
+                else
+                {
+                    personCache = new PersonCacheModel()
+                    {
+                        Id = id,
+                        Role = "Student",
+                        Status = admittedPerson.Status
+                    };
+                }
                 WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
                 _context.Update(admittedPerson);
                 await _context.SaveChangesAsync();
