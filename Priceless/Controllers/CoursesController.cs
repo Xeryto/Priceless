@@ -64,7 +64,6 @@ namespace Priceless.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Link")] Course course, int[] selectedStudents, int[] selectedTeachers)
         {
-            PersonCacheModel personCache = WebCache.Get("LoggedIn");
             course.CourseAssignments = new List<CourseAssignment>();
             course.Enrollments = new List<Enrollment>();
             if (ModelState.IsValid)
@@ -117,8 +116,12 @@ namespace Priceless.Controllers
         // GET: Courses/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            PersonCacheModel personCache = WebCache.Get("LoggedIn");
-
+            string ids;
+            PersonCacheModel personCache = null;
+            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids))
+            {
+                personCache = WebCache.Get("LoggedIn" + ids);
+            }
 
             if (id == null)
             {
@@ -177,8 +180,13 @@ namespace Priceless.Controllers
                 return NotFound();
             }
 
-            PersonCacheModel personCache = WebCache.Get("LoggedIn");
-            
+            string ids;
+            PersonCacheModel personCache = null;
+            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids))
+            {
+                personCache = WebCache.Get("LoggedIn" + ids);
+            }
+
 
             var courseToUpdate = await _context.Courses
                 .Include(i => i.Enrollments)
@@ -350,7 +358,12 @@ namespace Priceless.Controllers
                 return NotFound();
             }
 
-            PersonCacheModel personCache = WebCache.Get("LoggedIn");
+            string ids;
+            PersonCacheModel personCache = null;
+            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids))
+            {
+                personCache = WebCache.Get("LoggedIn" + ids);
+            }
             var teachers = new HashSet<int>
                 (course.CourseAssignments.Select(c => c.Teacher.Id));
 
@@ -381,7 +394,12 @@ namespace Priceless.Controllers
             var course = await _context.Courses
                 .Include(i => i.Enrollments)
                 .Include(i => i.CourseAssignments).SingleAsync(i => i.Id == id);
-            PersonCacheModel personCache = WebCache.Get("LoggedIn");
+            string ids;
+            PersonCacheModel personCache = null;
+            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids))
+            {
+                personCache = WebCache.Get("LoggedIn" + ids);
+            }
             var teachers = new HashSet<int>
                 (course.CourseAssignments.Select(c => c.Teacher.Id));
 

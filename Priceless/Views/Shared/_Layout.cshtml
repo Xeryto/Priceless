@@ -23,14 +23,23 @@
                         <nav class="navbar navbar-dark navbar-expand-sm">
                             <div class="btn-group bg-custom-3" style="border-radius: 20px;">
                                 @{
-                                    PersonCacheModel logged = WebCache.Get("LoggedIn");
+                                    string ids;
+                                    PersonCacheModel logged = null;
+                                    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+                                    {
+                                        <p>Success</p>
+                                        logged = WebCache.Get("LoggedIn" + ids);
+                                    }
+                                    else
+            {
+                <p>not success</p>
+            }
                                     if (logged != null)
                                     {
                                         <div class="collapse navbar-collapse" id="navbar-list-4">
                                             <ul class="navbar-nav">
                                                 <li class="nav-item dropdown">
                                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                        <span style="margin: 5px;">Войти</span>
                                                         @{
                                                             if (logged.Image == null)
                                                             {

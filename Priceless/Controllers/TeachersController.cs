@@ -27,6 +27,7 @@ namespace Priceless.Controllers
             _context = context;
         }
 
+
         // GET: Teachers
         public async Task<IActionResult> Index()
         {
@@ -181,13 +182,10 @@ namespace Priceless.Controllers
                     teacher.Image = stream.ToArray();
                 }
 
-                PersonCacheModel editor = WebCache.Get("LoggedIn");
-                if (editor.Id == id)
-                {
-                    WebCache.Remove("LoggedIn");
-                    editor.Image = teacher.Image;
-                    WebCache.Set("LoggedIn", editor, 60, true);
-                }
+                PersonCacheModel editor = WebCache.Get("LoggedIn" + id.ToString());
+                WebCache.Remove("LoggedIn"+id.ToString());
+                editor.Image = teacher.Image;
+                WebCache.Set("LoggedIn"+id.ToString(), editor, 60, true);
                 _context.Update(teacher);
                 await _context.SaveChangesAsync();
 
@@ -435,11 +433,7 @@ namespace Priceless.Controllers
                 .Include(i => i.CourseAssignments)
                 .SingleAsync(i => i.Id == id);
 
-            PersonCacheModel editor = WebCache.Get("LoggedIn");
-            if (editor.Id == id)
-            {
-                WebCache.Remove("LoggedIn");
-            }
+            WebCache.Remove("LoggedIn"+id.ToString());
 
             _context.Teachers.Remove(teacher);
 
@@ -454,6 +448,10 @@ namespace Priceless.Controllers
             if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
             {
                 admittedPerson.Status = "Admitted";
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
+                personCache.Status = admittedPerson.Status;
+                WebCache.Remove("LoggedIn" + id.ToString());
+                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
                 _context.Update(admittedPerson);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index");
@@ -468,6 +466,10 @@ namespace Priceless.Controllers
             if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
             {
                 admittedPerson.Status = "Rejected";
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
+                personCache.Status = admittedPerson.Status;
+                WebCache.Remove("LoggedIn" + id.ToString());
+                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
                 _context.Update(admittedPerson);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index");
