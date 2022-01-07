@@ -27,13 +27,8 @@
                                     PersonCacheModel logged = null;
                                     if (Context.Request.Cookies.TryGetValue("Id", out ids))
                                     {
-                                        <p>Success</p>
                                         logged = WebCache.Get("LoggedIn" + ids);
                                     }
-                                    else
-            {
-                <p>not success</p>
-            }
                                     if (logged != null)
                                     {
                                         <div class="collapse navbar-collapse" id="navbar-list-4">
