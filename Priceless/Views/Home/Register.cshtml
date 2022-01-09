@@ -2,13 +2,36 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-4"></div>
-        <div class="col-md-4">
-            <a asp-controller="Students" asp-action="Create">I'm a student</a>
-            <a asp-controller="Teachers" asp-action="Create">I'm a teacher</a>
+<div class="limiter">
+    <div class="container-login100">
+        <div class="wrap-login100">
+            <span class="login100-form-title p-b-26">
+                Welcome
+            </span>
+            <div class="container-login100-form-btn">
+                <div class="wrap-login100-form-btn">
+                    <div class="login100-form-bgbtn"></div>
+                    <a class="login100-form-btn" asp-action="Create" asp-controller="Students">
+                        I'm a student
+                    </a>
+                </div>
+            </div>
+            <div class="container-login100-form-btn">
+                <div class="wrap-login100-form-btn">
+                    <div class="login100-form-bgbtn"></div>
+                    <a class="login100-form-btn" asp-action="Create" asp-controller="Teachers">
+                        I'm a teacher
+                    </a>
+                </div>
+            </div>
+            <div class="container-login100-form-btn">
+                <div class="wrap-login100-form-btn">
+                    <div class="login100-form-bgbtn"></div>
+                    <a class="login100-form-btn" asp-action="CreateAdmin" asp-controller="Teachers">
+                        I'm an admin
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4"></div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,6 +32,11 @@ namespace Priceless.Controllers
             return View(await _context.Students.Where(s => s.Status == "In process").ToListAsync());
         }
 
+        public async Task<IActionResult> All()
+        {
+            return View(await _context.Students.ToListAsync());
+        }
+
         // GET: Students/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -41,6 +46,9 @@ namespace Priceless.Controllers
             }
 
             var student = await _context.Students
+                .Include(i => i.Admissions).ThenInclude(i => i.Major)
+                .Include(i => i.Enrollments).ThenInclude(i => i.Course)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (student == null)
             {
@@ -64,14 +72,14 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,ParentName,Phone,ParentPhone,City,FirstQA,SecondQA,Image")] StudentPostModel studentPost, int[] selectedMajors)
+        public async Task<IActionResult> Create([Bind("Grade,Id,Login,Password,Name,ParentName,Phone,ParentPhone,City,FirstQA,SecondQA,ThirdQA,Image")] StudentPostModel studentPost, int[] selectedMajors)
         {
             var mapper = new Mapper(config);
             var student = mapper.Map<StudentPostModel, Student>(studentPost);
             student.Admissions = new List<Admission>();
             if (ModelState.IsValid)
             {
-                if (!_context.People.Any(p => p.Login == student.Login))
+                if (!_context.People.Any(p  => p.Login == student.Login))
                 {
                     if (studentPost.Image != null)
                     {
@@ -111,7 +119,7 @@ namespace Priceless.Controllers
             {
                 return NotFound();
             }
-            var studentEdit = new StudentEditModel()
+            var studentEdit = new ImageEditModel()
             {
                 Id = (int)id
             };
@@ -121,7 +129,7 @@ namespace Priceless.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditImage(int id, [Bind("Image")] StudentEditModel studentEdit)
+        public async Task<IActionResult> EditImage(int id, [Bind("Image")] ImageEditModel studentEdit)
         {
 
             if (ModelState.IsValid)
@@ -192,7 +200,7 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, int[] selectedMajors)
+        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, bool reconsider, string oldPas, string newPas)
         {
             var studentToUpdate = await _context.Students
                 .Include(i => i.Admissions)
@@ -204,15 +212,33 @@ namespace Priceless.Controllers
             if (await TryUpdateModelAsync<Student>(
                 studentToUpdate,
                 "",
-                i => i.Name, i => i.Password))
+                i => i.Name, i => i.Password, i => i.Grade, i => i.Phone, i => i.ParentName, i => i.ParentPhone, i => i.City))
             {
-                if (studentToUpdate.Password != null)
+                if (oldPas != null && VerifyHashed(studentToUpdate.Password, oldPas))
                 {
-                    studentToUpdate.Password = Hash(studentToUpdate.Password);
+                    studentToUpdate.Password = Hash(newPas);
                 }
-                else
+                string ids;
+                HttpContext.Request.Cookies.TryGetValue("Id", out ids);
+                if (reconsider)
                 {
-                    studentToUpdate.Password = pass;
+                    studentToUpdate.Status = "In process";
+                    PersonCacheModel personCache = WebCache.Get("LoggedIn" + studentToUpdate.Id.ToString());
+                    if (personCache != null)
+                    {
+                        personCache.Status = studentToUpdate.Status;
+                        WebCache.Remove("LoggedIn" + studentToUpdate.Id.ToString());
+                    }
+                    else
+                    {
+                        personCache = new PersonCacheModel()
+                        {
+                            Id = studentToUpdate.Id,
+                            Role = "Student",
+                            Status = studentToUpdate.Status
+                        };
+                    }
+                    WebCache.Set("LoggedIn" + studentToUpdate.Id.ToString(), personCache, 60, true);
                 }
                 UpdateStudentMajors(selectedMajors, studentToUpdate);
                 try
@@ -233,7 +259,7 @@ namespace Priceless.Controllers
             return View(studentToUpdate);
         }
 
-        private void UpdateStudentMajors(int[] selectedMajors, Student studentToUpdate)
+        private void UpdateStudentMajors(int[] selectedMajors, Student studentToUpdate, bool? banChange = null)
         {
             if (selectedMajors == null)
             {
@@ -256,8 +282,7 @@ namespace Priceless.Controllers
                 else
                 {
                     if (studentCourses.Contains(major.Id))
-                    {
-                        Admission AdmissionToRemove = studentToUpdate.Admissions.FirstOrDefault(i => i.MajorId == major.Id);
+                    {                        Admission AdmissionToRemove = studentToUpdate.Admissions.FirstOrDefault(i => i.MajorId == major.Id);
                         _context.Remove(AdmissionToRemove);
                     }
                 }
@@ -400,6 +425,45 @@ namespace Priceless.Controllers
             Buffer.BlockCopy(salt, 0, dst, 1, 0x10);
             Buffer.BlockCopy(buffer2, 0, dst, 0x11, 0x20);
             return Convert.ToBase64String(dst);
+        }
+
+        private static bool VerifyHashed(string hashedPassword, string password)
+        {
+            byte[] buffer4;
+            if (hashedPassword == null)
+            {
+                return false;
+            }
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            byte[] src = Convert.FromBase64String(hashedPassword);
+            if ((src.Length != 0x31) || (src[0] != 0))
+            {
+                return false;
+            }
+            byte[] dst = new byte[0x10];
+            Buffer.BlockCopy(src, 1, dst, 0, 0x10);
+            byte[] buffer3 = new byte[0x20];
+            Buffer.BlockCopy(src, 0x11, buffer3, 0, 0x20);
+            using (Rfc2898DeriveBytes bytes = new(password, dst, 0x3e8))
+            {
+                buffer4 = bytes.GetBytes(0x20);
+            }
+            return ByteArraysEqual(buffer3, buffer4);
+        }
+
+        private static bool ByteArraysEqual(byte[] b1, byte[] b2)
+        {
+            if (b1 == b2) return true;
+            if (b1 == null || b2 == null) return false;
+            if (b1.Length != b2.Length) return false;
+            for (int i = 0; i < b1.Length; i++)
+            {
+                if (b1[i] != b2[i]) return false;
+            }
+            return true;
         }
     }
 }

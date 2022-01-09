@@ -32,14 +32,9 @@ namespace Priceless.Controllers
             _service = service;
         }
 
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> Index()
         {
             ViewData["Majors"] = await _service.GetAllMajors();
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
             return View();
         }
 
@@ -48,6 +43,7 @@ namespace Priceless.Controllers
             string id;
             HttpContext.Request.Cookies.TryGetValue("Id", out id);
             WebCache.Remove("LoggedIn"+id);
+            HttpContext.Response.Cookies.Delete("Id");
             return RedirectToAction("Index", "Home");
         }
 
@@ -63,9 +59,11 @@ namespace Priceless.Controllers
             if (await _service.Login(person.Login, person.Password))
             {
                 var commonPerson = await _service.GetByLogin(person.Login);
-                NpgsqlConnection conn = new("Server=localhost;Port=5432;Database=postgres;User Id=goldp1");
+                //NpgsqlConnection conn = new("Server=localhost;Port=5432;Database=postgres;User Id=goldp1");
+                SqlConnection conn = new("*");
                 conn.Open();
-                NpgsqlCommand command = new("SELECT "+'"'+"Discriminator"+'"'+" FROM "+'"'+"People"+'"'+" WHERE "+'"'+"Login"+'"'+" = @login");
+                SqlCommand command = new("Select Discriminator from People where Login = @login");
+                //NpgsqlCommand command = new("SELECT "+'"'+"Discriminator"+'"'+" FROM "+'"'+"People"+'"'+" WHERE "+'"'+"Login"+'"'+" = @login");
                 command.Connection = conn;
                 command.Parameters.AddWithValue("@login", person.Login);
                 string role = command.ExecuteScalar().ToString();
@@ -100,9 +98,43 @@ namespace Priceless.Controllers
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult FAQ()
         {
+            return View();
+        }
+
+        public IActionResult Feedback()
+        {
+            return View();
+        }
+
+        public IActionResult TeacherPromote()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> StudentPromote()
+        {
+            ViewData["Majors"] = await _service.GetAllMajors();
+            return View();
+        }
+
+        public IActionResult Contacts()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error(int? statusCode = null)
+        {
+            if (statusCode.HasValue)
+            {
+                if (statusCode == 403)
+                {
+                    var viewName = statusCode.ToString();
+                    return View(viewName);
+                }
+            }
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }

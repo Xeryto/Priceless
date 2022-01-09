@@ -15,6 +15,17 @@
             }
         })    
     })
+
+    $('.big-input100').each(function () {
+        $(this).on('blur', function () {
+            if ($(this).val().trim() != "") {
+                $(this).addClass('has-val');
+            }
+            else {
+                $(this).removeClass('has-val');
+            }
+        })
+    })
   
   
     /*==================================================================
@@ -38,6 +49,12 @@
     $('.validate-form .input100').each(function(){
         $(this).focus(function(){
            hideValidate(this);
+        });
+    });
+
+    $('.validate-form .big-input100').each(function () {
+        $(this).focus(function () {
+            hideValidate(this);
         });
     });
 

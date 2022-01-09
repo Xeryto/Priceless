@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,6 +34,11 @@ namespace Priceless.Controllers
             return View(await _context.Teachers.Where(t => t.Status == "In process").ToListAsync());
         }
 
+        public async Task<IActionResult> All()
+        {
+            return View(await _context.Teachers.ToListAsync());
+        }
+
         // GET: Teachers/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -43,6 +48,9 @@ namespace Priceless.Controllers
             }
 
             var teacher = await _context.Teachers
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
+                .Include(i => i.MajorAssignments).ThenInclude(i => i.Major)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (teacher == null)
             {
@@ -54,6 +62,9 @@ namespace Priceless.Controllers
 
         public IActionResult CreateAdmin()
         {
+            var teacher = new Teacher();
+            teacher.MajorAssignments = new List<MajorAssignment>();
+            PopulateAssignedMajorData(teacher);
             return View();
         }
 
@@ -154,7 +165,7 @@ namespace Priceless.Controllers
             {
                 return NotFound();
             }
-            var teacherEdit = new TeacherEditModel()
+            var teacherEdit = new ImageEditModel()
             {
                 Id = teacher.Id
             };
@@ -164,7 +175,7 @@ namespace Priceless.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditImage(int id, [Bind("Image")] TeacherEditModel teacherEdit)
+        public async Task<IActionResult> EditImage(int id, [Bind("Image")] ImageEditModel teacherEdit)
         {
 
             if (ModelState.IsValid)
@@ -273,7 +284,7 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, int[] selectedCourses)
+        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, int[] selectedCourses, bool reconsider, string oldPas, string newPas)
         {
             if (id == null)
             {
@@ -286,20 +297,35 @@ namespace Priceless.Controllers
                 .Include(i => i.CourseAssignments)
                     .ThenInclude(i => i.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            var pass = teacherToUpdate.Password;
 
             if (await TryUpdateModelAsync<Teacher>(
                 teacherToUpdate,
                 "",
                 i => i.Name, i => i.Password, i => i.Phone, i => i.VK, i => i.Grade, i => i.School))
             {
-                if (teacherToUpdate.Password != null)
+                if (oldPas != null && VerifyHashed(teacherToUpdate.Password, oldPas))
                 {
-                    teacherToUpdate.Password = Hash(teacherToUpdate.Password);
+                    teacherToUpdate.Password = Hash(newPas);
                 }
-                else
+                if (reconsider)
                 {
-                    teacherToUpdate.Password = pass;
+                    teacherToUpdate.Status = "In process";
+                    PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
+                    if (personCache != null)
+                    {
+                        personCache.Status = teacherToUpdate.Status;
+                        WebCache.Remove("LoggedIn" + teacherToUpdate.Id.ToString());
+                    }
+                    else
+                    {
+                        personCache = new PersonCacheModel()
+                        {
+                            Id = teacherToUpdate.Id,
+                            Role = "Teacher",
+                            Status = teacherToUpdate.Status
+                        };
+                    }
+                    WebCache.Set("LoggedIn" + teacherToUpdate.Id.ToString(), personCache, 60, true);
                 }
                 UpdateTeacherMajors(selectedMajors, teacherToUpdate);
                 UpdateTeacherCourses(selectedCourses, teacherToUpdate);

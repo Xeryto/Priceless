@@ -1,0 +1,93 @@
+﻿@{
+    ViewData["Title"] = "Become student";
+}
+
+<div class="row" style="background-image: url(../img/promote_back.png); background-size:cover; height: 606px; display:flex; justify-content: center; align-items: center;">
+    <h1 style="font-weight: bold; font-size: 144px; color: white; text-align: center;">Стань нашим учеником</h1>
+</div>
+<div class="row">
+    <div class="col-md-3 promoteBlock">
+        <img src="~/img/icons/idea.png" alt="idea" class="promote" style="height:13vh;" />
+        <h1 class="h1">Выбери предмет</h1>
+        <p class="p1">Выберите предмет, на который вы хотите подать заявку.</p>
+    </div>
+    <div class="col-md-3 promoteBlock2">
+        <img src="~/img/icons/pen.png" alt="pen" class="promote" />
+        <h1 class="h1">Заполни форму</h1>
+        <p class="p2">Нажмите на кнопку "Записаться" в предмете, который вас интересует.</p>
+    </div>
+    <div class="col-md-3 promoteBlock">
+        <img src="~/img/icons/chat.png" alt="chat" class="promote" />
+        <h1 class="h1">Ждите ответ</h1>
+        <p class="p1">В течение недели решение о зачислении будет принято и отображено в вашем профиле.</p>
+    </div>
+    <div class="col-md-3 promoteBlock2">
+        <img src="~/img/icons/pc.png" alt="pc" class="promote" />
+        <h1 class="h1">Начинайте заниматься!</h1>
+        <p class="p2">Если вы приняты в проект, учитель создаст курс и свяжется с вами, чтобы договориться о времени занятий. </p>
+    </div>
+</div>
+<div class="row">
+    <div class="container">
+        <h1 class="h">Training programs</h1>
+        <hr class="splitter" />
+        <div class="container">
+            <div class="row">
+                @{
+                    List<Major> majors = ViewBag.Majors;
+
+                    int cnt = 0;
+                    int len = majors.Count();
+
+                    foreach (var major in majors)
+                    {
+                        cnt++;
+                        if (cnt % 3 == 1)
+                        {
+                        @:</div><div class="row">
+                            if (len - cnt == 0)
+                            {
+                                <div class="col-md-4"></div>
+                            }
+                            else if (len - cnt == 1)
+                            {
+                                <div class="col-md-2"></div>
+                            }
+                        }
+
+
+                        <div class="col-md-4">
+                            <div class="wsk-cp-product">
+                                <div class="wsk-cp-img">
+                                    @{
+                                        if (major.Image == null)
+                                        {
+                                            <img src="~/img/major.png" alt="courseImage" class="img-responsive" />
+                                        }
+                                        else
+                                        {
+                                            <img src="data:image; base64,@Convert.ToBase64String(major.Image)" alt="courseImage" class="img-responsive" />
+                                        }
+                                    }
+                                </div>
+                                <div class="wsk-cp-text">
+                                    <a class="category" asp-action="Create" asp-controller="Students">
+                                        <span>Записаться</span>
+                                    </a>
+                                    <div class="title-product">
+                                        <h3>@major.Title</h3>
+                                    </div>
+                                    <div class="descirption-prod">
+                                        <p>
+                                            <a asp-controller="Majors" asp-action="Details" asp-route-id="@major.Id">Details</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
