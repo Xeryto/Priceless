@@ -15,7 +15,16 @@
                 </span>
 
                 <div class="wrap-input100 validate-input" data-validate="Valid email is: a@b.c">
-                    <input class="input100" type="email" asp-for="Login">
+                    @{
+                        if (Model.InfoNotValid)
+                        {
+                            <input class="input100 has-val" type="email" asp-for="Login">
+                        }
+                        else
+                        {
+                            <input class="input100" type="email" asp-for="Login">
+                        }
+                    }
                     <span class="focus-input100" data-placeholder="Email"></span>
                 </div>
 

@@ -1,10 +1,29 @@
-﻿@{
+﻿@using System.Web.Helpers;
+@using Priceless.Models.Helpers;
+
+@{
     ViewData["Title"] = "Home Page";
+    bool flag = false;
+    bool logged = false;
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        logged = true;
+        if (personCache.Status == "Admin" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
+        {
+            flag = true;
+        }
+    }
 }
 
 <div class="row">
     <div class="col-md-2" style="text-align:center">
-        <img src="~/img/logo2.png" alt="logo2" style="max-width: 100%;" class="helper"/>
+        <img src="~/img/logo2.png" alt="logo2" style="max-width: 100%;" class="helper" />
     </div>
     <div class="col-md-8">
         <h1 style="font-size: 80px; text-align: center; color: #923631;">Priceless Education</h1>
@@ -25,7 +44,7 @@
         </div>
     </div>
     <div class="col-md-2" style="text-align: center;">
-        <img src="~/img/logo2.png" alt="logo2" style="max-width:100%" class="helper"/>
+        <img src="~/img/logo2.png" alt="logo2" style="max-width:100%" class="helper" />
     </div>
 </div>
 <div class="row" style="background-color: #DCAC83;">
@@ -72,11 +91,42 @@
                                     }
                                 </div>
                                 <div class="wsk-cp-text">
-                                    <a class="category" asp-action="Create" asp-controller="Students">
-                                        <span>Записаться</span>
-                                    </a>
+                                    @{
+                                        if (logged && !flag)
+                                        {
+                                            <a class="category" asp-action="Edit" asp-controller="Students" asp-route-id="@personCache.Id">
+                                                <span>Записаться</span>
+                                            </a>
+                                        }
+                                        else if (logged && flag)
+                                        {
+                                            <a class="category" asp-action="Edit" asp-controller="Teachers" asp-route-id="@personCache.Id">
+                                                <span>Записаться</span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="category" asp-action="Create" asp-controller="Students">
+                                                <span>Записаться</span>
+                                            </a>
+                                        }
+                                    }
                                     <div class="title-product">
                                         <h3>@major.Title</h3>
+                                    </div>
+                                    <div class="descirption-prod">
+                                        <p>
+                                            <a asp-controller="Majors" asp-action="Details" asp-route-id="@major.Id">Details</a>
+                                            @{
+                                                if (flag)
+                                                {
+                                                    <span>|</span>
+                                                    <a asp-controller="Majors" asp-action="Edit" asp-route-id="@major.Id">Edit</a>
+                                                    <span>|</span>
+                                                    <a asp-controller="Majors" asp-action="Delete" asp-route-id="@major.Id">Delete</a>
+                                                }
+                                            }
+                                        </p>
                                     </div>
                                 </div>
                             </div>

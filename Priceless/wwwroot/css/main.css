@@ -1,4 +1,4 @@
-
+﻿
 
 
 
@@ -69,7 +69,7 @@ a:hover {
 }
 
 /*---------------------------------------------*/
-h1,h2,h3,h4,h5,h6 {
+h1,h2,h3,h4,h5,h6 class="h6" {
 	margin: 0px;
 }
 
@@ -159,7 +159,6 @@ iframe {
 
 .limiter {
   margin: 0 -15px;
-  width: calc(100%+30px);
   background-image: url("../img/body-bg.jpeg");
   background-size: cover;
 }
@@ -255,6 +254,18 @@ iframe {
   padding: 0 5px;
 }
 
+.big-input100 {
+	font-family: Poppins-Regular;
+	font-size: 15px;
+	color: #555555;
+	line-height: 1.2;
+	display: block;
+	width: 100%;
+	height: 55px;
+	background: transparent;
+	padding: 0 5px;
+}
+
 /*---------------------------------------------*/ 
 .focus-input100 {
   position: absolute;
@@ -321,6 +332,22 @@ iframe {
 
 .has-val.input100 + .focus-input100::before {
   width: 100%;
+}
+
+.big-input100:focus + .focus-input100::after {
+	top: -25px;
+}
+
+.big-input100:focus + .focus-input100::before {
+	width: 100%;
+}
+
+.has-val.big-input100 + .focus-input100::after {
+	top: -25px;
+}
+
+.has-val.big-input100 + .focus-input100::before {
+	width: 100%;
 }
 
 /*---------------------------------------------*/
@@ -425,8 +452,12 @@ iframe {
   height: 50px;
 }
 
+.login100-form-btn:hover {
+	color:#fff;
+}
+
 .wrap-login100-form-btn:hover .login100-form-bgbtn {
-  left: 0;
+	left: 0;
 }
 
 
