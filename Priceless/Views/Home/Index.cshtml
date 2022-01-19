@@ -27,17 +27,24 @@
     </div>
     <div class="col-md-8">
         <h1 style="font-size: 80px; text-align: center; color: #923631;">Priceless Education</h1>
-        <p style="font-size: 24px; text-align: center; color: #555555;">A unique educational project of students of the school "Letovo", which unites students from all over the country. We are students with a wealth of teaching experience, and we believe that our experience and love for what we do will help our peer students believe in themselves and realize their potential!</p>
+        <p style="font-size: 24px; text-align: center; color: #555555;" class="en">A unique educational project of students of the school "Letovo", which unites students from all over the country. We are students with a wealth of teaching experience, and we believe that our experience and love for what we do will help our peer students believe in themselves and realize their potential!</p>
+        <p style="font-size: 24 px; text-align: center; color:#555555;" class="ru">Уникальный образовательный проект учеников школы “Летово”, объединяющий школьников со всей страны. Мы – школьники с богатым опытом преподавания, и мы верим, что наш опыт и любовь к тому, что мы делаем, помогут нашим ученикам-сверстникам поверить в себя и реализовать свой потенциал!</p>
         <div class="container" style="margin: 30px 0;">
             <div class="row">
                 <div class="col-md-6">
-                    <a asp-action="Create" asp-controller="Students" class="button-block" style="float: right; margin-right: 20px;">
+                    <a asp-action="Create" asp-controller="Students" class="button-block en" style="float: right; margin-right: 20px;">
                         Admission
+                    </a>
+                    <a asp-action="Create" asp-controller="Students" class="button-block ru" style="float: right; margin-right: 20px;">
+                        Поступление
                     </a>
                 </div>
                 <div class="col-md-6">
-                    <a asp-action="About" asp-controller="Home" class="button-block" style="float: left; margin-left: 20px;">
+                    <a asp-action="About" asp-controller="Home" class="button-block en" style="float: left; margin-left: 20px;">
                         About us
+                    </a>
+                    <a asp-action="About" asp-controller="Home" class="button-block ru" style="float: left; margin-left: 20px;">
+                        О нас
                     </a>
                 </div>
             </div>
@@ -49,7 +56,8 @@
 </div>
 <div class="row" style="background-color: #DCAC83;">
     <div class="container">
-        <h1 class="h">Training programs</h1>
+        <h1 class="h en">Training programs</h1>
+        <h1 class="h ru">Направления обучения</h1>
         <hr class="splitter" />
         <div class="container">
             <div class="row">
@@ -95,19 +103,22 @@
                                         if (logged && !flag)
                                         {
                                             <a class="category" asp-action="Edit" asp-controller="Students" asp-route-id="@personCache.Id">
-                                                <span>Записаться</span>
+                                                <span class="en">Register</span>
+                                                <span class="ru">Записаться</span>
                                             </a>
                                         }
                                         else if (logged && flag)
                                         {
                                             <a class="category" asp-action="Edit" asp-controller="Teachers" asp-route-id="@personCache.Id">
-                                                <span>Записаться</span>
+                                                <span class="en">Register</span>
+                                                <span class="ru">Записаться</span>
                                             </a>
                                         }
                                         else
                                         {
                                             <a class="category" asp-action="Create" asp-controller="Students">
-                                                <span>Записаться</span>
+                                                <span class="en">Register</span>
+                                                <span class="ru">Записаться</span>
                                             </a>
                                         }
                                     }
@@ -116,14 +127,17 @@
                                     </div>
                                     <div class="descirption-prod">
                                         <p>
-                                            <a asp-controller="Majors" asp-action="Details" asp-route-id="@major.Id">Details</a>
+                                            <a asp-controller="Majors" asp-action="Details" asp-route-id="@major.Id" class="en">Детали</a>
+                                            <a asp-controller="Majors" asp-action="Details" asp-route-id="@major.Id" class="ru">Детали</a>
                                             @{
                                                 if (flag)
                                                 {
                                                     <span>|</span>
-                                                    <a asp-controller="Majors" asp-action="Edit" asp-route-id="@major.Id">Edit</a>
+                                                    <a asp-controller="Majors" asp-action="Edit" asp-route-id="@major.Id" class="en">Edit</a>
+                                                    <a asp-controller="Majors" asp-action="Edit" asp-route-id="@major.Id" class="ru">Изменить</a>
                                                     <span>|</span>
-                                                    <a asp-controller="Majors" asp-action="Delete" asp-route-id="@major.Id">Delete</a>
+                                                    <a asp-controller="Majors" asp-action="Delete" asp-route-id="@major.Id" class="en">Delete</a>
+                                                    <a asp-controller="Majors" asp-action="Delete" asp-route-id="@major.Id" class="ru">Удалить</a>
                                                 }
                                             }
                                         </p>
