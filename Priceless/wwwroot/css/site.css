@@ -86,11 +86,11 @@ body {
     border-radius: 20px;
 }
 
-.dropdown-item:first-child {
+.first {
     border-radius: 20px 20px 0 0;
 }
 
-.dropdown-item:last-child {
+.last {
     border-radius: 0 0 20px 20px;
 }
 
@@ -228,6 +228,47 @@ body {
 
 .hidden {
     display: none;
+}
+
+.navbar-toggler {
+    margin: 0 auto;
+}
+
+.topBlock {
+    border-radius: 20px;
+}
+
+@media (min-width: 576px) {
+    #top {
+        margin-bottom: -50px;
+    }
+
+    #second {
+        margin-left: auto;
+        margin-right: 0;
+    }
+
+    .centerize-right {
+        float: right;
+        margin-right: 20px;
+    }
+
+    .centerize-left {
+        float: left;
+        margin-left: 20px;
+    }
+}
+
+@media (max-width: 575px) {
+    .topBlock {
+        margin: 0 auto;
+    }
+
+    .centerize {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
 }
 
 .carousel-item.active,

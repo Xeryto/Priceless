@@ -185,6 +185,13 @@ iframe {
 	}
 }
 
+@media (max-width: 575px)
+{
+	.container-login100 {
+		width: 29rem;
+	}
+}
+
 .wrap-login100 {
   width: 100%;
   background: #fff;

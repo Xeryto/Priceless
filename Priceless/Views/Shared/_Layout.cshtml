@@ -31,11 +31,11 @@
 <body>
     <div class="wrapper">
         <header class="bg-custom">
-            <div class="container" style="margin-bottom: -50px;">
+            <div class="container" id="top">
                 <div class="row">
                     <div class="col-md-6">
                         <nav class="navbar navbar-dark navbar-expand-sm">
-                            <div class="btn-group bg-custom-3" style="border-radius: 20px;">
+                            <div class="btn-group bg-custom-3 topBlock">
                                 @{
                                     string ids;
                                     PersonCacheModel logged = null;
@@ -45,7 +45,6 @@
                                     }
                                     if (logged != null)
                                     {
-                                        <div class="collapse navbar-collapse" id="navbar-list-4">
                                             <ul class="navbar-nav">
                                                 <li class="nav-item dropdown">
                                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -62,8 +61,8 @@
                                                         }
                                                     </a>
                                                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                                        <a class="dropdown-item en" asp-controller="Home" asp-action="Logout">Log out</a>
-                                                        <a class="dropdown-item ru" asp-controller="Home" asp-action="Logout">Выйти</a>
+                                                        <a class="dropdown-item en first" asp-controller="Home" asp-action="Logout">Log out</a>
+                                                        <a class="dropdown-item ru first" asp-controller="Home" asp-action="Logout">Выйти</a>
                                                         @{
                                                             if (logged.Role == "Student")
                                                             {
@@ -71,27 +70,25 @@
                                                                 <a class="dropdown-item ru" asp-controller="Students" asp-action="Details" asp-route-id="@logged.Id">Профиль</a>
                                                                 <a class="dropdown-item en" asp-controller="Students" asp-action="Edit" asp-route-id="@logged.Id">Edit</a>
                                                                 <a class="dropdown-item ru" asp-controller="Students" asp-action="Edit" asp-route-id="@logged.Id">Изменить профиль</a>
-                                                                <a class="dropdown-item en" asp-controller="Students" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Delete</a>
-                                                                <a class="dropdown-item ru" asp-controller="Students" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Удалить профиль</a>
+                                                                <a class="dropdown-item en last" asp-controller="Students" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Delete</a>
+                                                                <a class="dropdown-item ru last" asp-controller="Students" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Удалить профиль</a>
                                                             }
                                                             else if (logged.Role == "Teacher")
                                                             {
-                                                                <a class="dropdown-item en" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Profile</a>
-                                                                <a class="dropdown-item ru" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Профиль</a>
+                                                                <a class="dropdown-item en first" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Profile</a>
+                                                                <a class="dropdown-item ru first" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Профиль</a>
                                                                 <a class="dropdown-item en" asp-controller="Teachers" asp-action="Edit" asp-route-id="@logged.Id">Edit</a>
                                                                 <a class="dropdown-item ru" asp-controller="Teachers" asp-action="Edit" asp-route-id="@logged.Id">Изменить профиль</a>
-                                                                <a class="dropdown-item en" asp-controller="Teachers" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Delete</a>
-                                                                <a class="dropdown-item ru" asp-controller="Teachers" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Удалить профиль</a>
+                                                                <a class="dropdown-item en last" asp-controller="Teachers" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Delete</a>
+                                                                <a class="dropdown-item ru last" asp-controller="Teachers" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Удалить профиль</a>
                                                             }
                                                         }
                                                     </div>
                                                 </li>
                                             </ul>
-                                        </div>
                                     }
                                     else
                                     {
-                                        <div class="collapse navbar-collapse" id="navbar-list-4">
                                             <ul class="navbar-nav">
                                                 <li class="nav-item dropdown">
                                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -100,14 +97,13 @@
                                                         <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" />
                                                     </a>
                                                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                                        <a class="dropdown-item en" asp-controller="Home" asp-action="Login">Log in</a>
-                                                        <a class="dropdown-item ru" asp-controller="Home" asp-action="Login">Войти</a>
-                                                        <a class="dropdown-item en" asp-controller="Home" asp-action="Register">Register</a>
-                                                        <a class="dropdown-item ru" asp-controller="Home" asp-action="Register">Зарегистрироваться</a>
+                                                        <a class="dropdown-item en first" asp-controller="Home" asp-action="Login">Log in</a>
+                                                        <a class="dropdown-item ru first" asp-controller="Home" asp-action="Login">Войти</a>
+                                                        <a class="dropdown-item en last" asp-controller="Home" asp-action="Register">Register</a>
+                                                        <a class="dropdown-item ru last" asp-controller="Home" asp-action="Register">Зарегистрироваться</a>
                                                     </div>
                                                 </li>
                                             </ul>
-                                        </div>
                                     }
                                 }
                             </div>
@@ -115,8 +111,7 @@
                     </div>
                     <div class="col-md-6">
                         <nav class="navbar navbar-dark navbar-expand-sm">
-                            <div class="bg-custom-3" style="border-radius: 20px; margin-left: auto; margin-right: 0;">
-                                <div class="collapse navbar-collapse" id="navbar-list-4">
+                            <div class="bg-custom-3 topBlock" id="second">
                                     <ul class="navbar-nav">
                                         <li class="nav-item dropdown">
                                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -125,13 +120,12 @@
                                                 <span class="en">En</span>
                                             </a>
                                             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                                <a class="dropdown-item" id="lngSwitch1">Русский</a>
-                                                <a class="dropdown-item" id="lngSwitch2">English</a>
+                                                <a class="dropdown-item first" id="lngSwitch1">Русский</a>
+                                                <a class="dropdown-item last" id="lngSwitch2">English</a>
                                             </div>
                                         </li>
                                     </ul>
                                 </div>
-                            </div>
                         </nav>
                     </div>
                 </div>
@@ -140,12 +134,12 @@
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/img/logo.png" alt="logo" style="max-height: 70px; margin-right:0;" /></a>
             </div>
             <div class="container">
-                <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light mb-3">
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <nav class="navbar navbar-expand-lg navbar-toggleable-lg navbar-light mb-3">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#headerDrop" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between" id="headerDrop">
                         <div style="display: block; margin: 0 auto;">
                             <ul class="navbar-nav flex-grow-1 bg-custom-2" style="text-align:center; border-radius: 20px;">
                                 <li class="nav-item">
@@ -197,11 +191,11 @@
                 <div class="col-md-8">
                     <div class="container">
                         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light mb-3">
-                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#footer" aria-controls="navbarSupportedContent"
                                     aria-expanded="false" aria-label="Toggle navigation">
                                 <span class="navbar-toggler-icon"></span>
                             </button>
-                            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="footer">
                                 <div style="display: block; margin: 0 auto;">
                                     <ul class="navbar-nav flex-grow-1 bg-custom-2" style="text-align:center; border-radius: 20px;">
                                         <li class="nav-item">
