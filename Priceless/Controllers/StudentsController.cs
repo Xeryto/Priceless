@@ -29,12 +29,25 @@ namespace Priceless.Controllers
         // GET: Students
         public async Task<IActionResult> Index()
         {
+            ViewData["Majors"] = await _context.Majors.ToListAsync();
             return View(await _context.Students.Where(s => s.Status == "In process").ToListAsync());
         }
 
-        public async Task<IActionResult> All()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Index(int[] selectedMajors, bool admitted)
         {
-            return View(await _context.Students.ToListAsync());
+            ViewData["Majors"] = await _context.Majors.ToListAsync();
+            var command = _context.Students.Include(i => i.Admissions).ThenInclude(i => i.Major).AsNoTracking();
+            if (admitted)
+            {
+                command = command.Where(i => i.Status == "In process");
+            }
+            foreach (var majorId in selectedMajors)
+            {
+                command = command.Where(i => i.Admissions.Where(a => a.MajorId == majorId).Any());
+            }
+            return View(await command.ToListAsync());
         }
 
         // GET: Students/Details/5

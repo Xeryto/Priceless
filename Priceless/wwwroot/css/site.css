@@ -271,6 +271,12 @@ body {
     }
 }
 
+@media (max-width: 720px) {
+    .removeSmall {
+        display: none;
+    }
+}
+
 .carousel-item.active,
 .carousel-item-next,
 .carousel-item-prev {
