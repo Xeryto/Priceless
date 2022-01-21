@@ -26,26 +26,30 @@
         <img src="~/img/logo2.png" alt="logo2" style="max-width: 100%;" class="helper" />
     </div>
     <div class="col-md-8">
-        <h1 style="font-size: 80px; text-align: center; color: #923631;">Priceless Education</h1>
-        <p style="font-size: 24px; text-align: center; color: #555555;" class="en">A unique educational project of students of the school "Letovo", which unites students from all over the country. We are students with a wealth of teaching experience, and we believe that our experience and love for what we do will help our peer students believe in themselves and realize their potential!</p>
-        <p style="font-size: 24 px; text-align: center; color:#555555;" class="ru">Уникальный образовательный проект учеников школы “Летово”, объединяющий школьников со всей страны. Мы – школьники с богатым опытом преподавания, и мы верим, что наш опыт и любовь к тому, что мы делаем, помогут нашим ученикам-сверстникам поверить в себя и реализовать свой потенциал!</p>
+        <h1 style="font-size: 5rem; text-align: center; color: #923631;">Priceless Education</h1>
+        <p style="font-size: 2rem; text-align: center; color: #555555;" class="en">A unique educational project of students of the school "Letovo", which unites students from all over the country. We are students with a wealth of teaching experience, and we believe that our experience and love for what we do will help our peer students believe in themselves and realize their potential!</p>
+        <p style="font-size: 2rem; text-align: center; color:#555555;" class="ru">Уникальный образовательный проект учеников школы “Летово”, объединяющий школьников со всей страны. Мы – школьники с богатым опытом преподавания, и мы верим, что наш опыт и любовь к тому, что мы делаем, помогут нашим ученикам-сверстникам поверить в себя и реализовать свой потенциал!</p>
         <div class="container" style="margin: 30px 0;">
             <div class="row">
                 <div class="col-md-6">
-                    <a asp-action="Create" asp-controller="Students" class="button-block en" style="float: right; margin-right: 20px;">
-                        Admission
-                    </a>
-                    <a asp-action="Create" asp-controller="Students" class="button-block ru" style="float: right; margin-right: 20px;">
-                        Поступление
-                    </a>
+                    <div class="centerize">
+                        <a asp-action="Create" asp-controller="Students" class="button-block en centerize-right">
+                            Admission
+                        </a>
+                        <a asp-action="Create" asp-controller="Students" class="button-block ru centerize-right">
+                            Поступление
+                        </a>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <a asp-action="About" asp-controller="Home" class="button-block en" style="float: left; margin-left: 20px;">
-                        About us
-                    </a>
-                    <a asp-action="About" asp-controller="Home" class="button-block ru" style="float: left; margin-left: 20px;">
-                        О нас
-                    </a>
+                    <div class="centerize">
+                        <a asp-action="About" asp-controller="Home" class="button-block en centerize-left">
+                            About us
+                        </a>
+                        <a asp-action="About" asp-controller="Home" class="button-block ru centerize-left">
+                            О нас
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -75,16 +79,16 @@
                         @:</div><div class="row">
                             if (len - cnt == 0)
                             {
-                                <div class="col-md-4"></div>
+                                <div class="col-lg-4"></div>
                             }
                             else if (len - cnt == 1)
                             {
-                                <div class="col-md-2"></div>
+                                <div class="col-lg-2"></div>
                             }
                         }
 
 
-                        <div class="col-md-4">
+                        <div class="col-lg-4">
                             <div class="wsk-cp-product">
                                 <div class="wsk-cp-img">
                                     @{
