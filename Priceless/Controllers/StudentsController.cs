@@ -30,7 +30,7 @@ namespace Priceless.Controllers
         public async Task<IActionResult> Index()
         {
             ViewData["Majors"] = await _context.Majors.ToListAsync();
-            return View(await _context.Students.Where(s => s.Status == "In process").ToListAsync());
+            return View(await _context.Students.ToListAsync());
         }
 
         [HttpPost]
