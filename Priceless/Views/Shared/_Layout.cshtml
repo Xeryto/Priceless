@@ -75,8 +75,8 @@
                                                             }
                                                             else if (logged.Role == "Teacher")
                                                             {
-                                                                <a class="dropdown-item en first" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Profile</a>
-                                                                <a class="dropdown-item ru first" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Профиль</a>
+                                                                <a class="dropdown-item en" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Profile</a>
+                                                                <a class="dropdown-item ru" asp-controller="Teachers" asp-action="Details" asp-route-id="@logged.Id">Профиль</a>
                                                                 <a class="dropdown-item en" asp-controller="Teachers" asp-action="Edit" asp-route-id="@logged.Id">Edit</a>
                                                                 <a class="dropdown-item ru" asp-controller="Teachers" asp-action="Edit" asp-route-id="@logged.Id">Изменить профиль</a>
                                                                 <a class="dropdown-item en last" asp-controller="Teachers" asp-action="Delete" asp-route-id="@logged.Id" asp-route-userId="@logged.Id">Delete</a>

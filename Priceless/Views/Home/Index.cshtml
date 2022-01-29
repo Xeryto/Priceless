@@ -14,7 +14,7 @@
     if (personCache != null)
     {
         logged = true;
-        if (personCache.Status == "Admin" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
         {
             flag = true;
         }
@@ -153,5 +153,99 @@
                 }
             </div>
         </div>
+    </div>
+</div>
+<div class="row">
+    <div class="container">
+        <h1 class="en">Project leaders</h1>
+        <h1 class="ru">Лидеры проекта</h1>
+        <hr class="splitter" />
+        <div class="row">
+            @{
+                var admins = ViewBag.Admins;
+                int cnt3 = 0;
+                int len2 = admins.Count;
+
+                foreach (var admin in admins)
+                {
+                    cnt3++;
+                    if (cnt3 % 3 == 1)
+                    {
+                    @:</div><div class="row">
+                        if (len2 - cnt3 == 0)
+                        {
+                            <div class="col-md-4"></div> }
+                        else if (len2 - cnt3 == 1)
+                        {
+                            <div class="col-md-2"></div> }
+                    }
+
+
+                    <div class="col-md-4">
+                        <div class="wsk-cp-product">
+                            <div class="wsk-cp-img">
+                                @{ if (admin.Image == null)
+                                    {
+                                        <img src="~/img/default-user-icon.jpg" alt="courseImage" class="img-responsive" /> }
+                                    else
+                                    {
+                                        <img src="data:image; base64,@Convert.ToBase64String(admin.Image)" alt="courseImage" class="img-responsive" /> } }
+                            </div>
+                            <div class="wsk-cp-text">
+                                <div class="title-product">
+                                    <h3>@admin.Name</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div> } }
+        </div>
+
+    </div>
+</div>
+<div class="row">
+    <div class="container">
+        <h1 class="en">Curators</h1>
+        <h1 class="ru">Кураторы</h1>
+        <hr class="splitter" />
+        <div class="row">
+            @{
+                var curators = ViewBag.Curators;
+                int cnt4 = 0;
+                int len3 = curators.Count;
+
+                foreach (var curator in curators)
+                {
+                    cnt4++;
+                    if (cnt4 % 3 == 1)
+                    {
+                    @:</div><div class="row">
+                        if (len3 - cnt4 == 0)
+                        {
+                            <div class="col-md-4"></div> }
+                        else if (len3 - cnt4 == 1)
+                        {
+                            <div class="col-md-2"></div> }
+                    }
+
+
+                    <div class="col-md-4">
+                        <div class="wsk-cp-product">
+                            <div class="wsk-cp-img">
+                                @{ if (curator.Image == null)
+                                    {
+                                        <img src="~/img/default-user-icon.jpg" alt="courseImage" class="img-responsive" /> }
+                                    else
+                                    {
+                                        <img src="data:image; base64,@Convert.ToBase64String(curator.Image)" alt="courseImage" class="img-responsive" /> } }
+                            </div>
+                            <div class="wsk-cp-text">
+                                <div class="title-product">
+                                    <h3>@curator.Name</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div> } }
+        </div>
+
     </div>
 </div>
