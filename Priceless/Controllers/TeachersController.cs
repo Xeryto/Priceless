@@ -31,15 +31,31 @@ namespace Priceless.Controllers
         // GET: Teachers
         public async Task<IActionResult> Index()
         {
-            ViewData["Majors"] = await _context.Majors.ToListAsync();
-            return View(await _context.Teachers.ToListAsync());
+            var majors = await _context.Majors.ToListAsync();
+            ViewData["Majors"] = majors;
+            ViewData["Process"] = true;
+            Dictionary<int, bool> selectedMajors = new();
+            foreach (var major in majors)
+            {
+                selectedMajors.Add(major.Id, false);
+            }
+            ViewData["SelectedMajors"] = selectedMajors;
+            return View(await _context.Teachers.Where(i => i.Status == "In process").ToListAsync());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(int[] selectedMajors, bool admitted)
         {
-            ViewData["Majors"] = await _context.Majors.ToListAsync();
+            var majors = await _context.Majors.ToListAsync();
+            ViewData["Majors"] = majors;
+            Dictionary<int, bool> selectedMajorsDict = new();
+            foreach (var major in majors)
+            {
+                selectedMajorsDict.Add(major.Id, selectedMajors.Contains(major.Id));
+            }
+            ViewData["SelectedMajors"] = selectedMajorsDict;
+            ViewData["Process"] = admitted;
             var command = _context.Teachers.Include(i => i.MajorAssignments).ThenInclude(i => i.Major).AsNoTracking();
             if (admitted)
             {
@@ -84,7 +100,7 @@ namespace Priceless.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAdmin([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,Image")] TeacherPostModel teacherPost, int[] selectedMajors, string Code)
+        public async Task<IActionResult> CreateAdmin([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,Image")] TeacherPostModel teacherPost, int[] selectedMajors, string Code, bool Curator)
         {
             var mapper = new Mapper(config);
             var teacher = mapper.Map<TeacherPostModel, Teacher>(teacherPost);
@@ -101,7 +117,14 @@ namespace Priceless.Controllers
                     }
 
                     teacher.Password = Hash(teacher.Password);
-                    teacher.Status = "Admin";
+                    if (Curator)
+                    {
+                        teacher.Status = "Curator";
+                    }
+                    else
+                    {
+                        teacher.Status = "Admin";
+                    }
                     AddTeacherMajors(selectedMajors, teacher);
                     _context.Add(teacher);
                     await _context.SaveChangesAsync();
@@ -478,66 +501,6 @@ namespace Priceless.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> Admit(int id, int userId)
-        {
-            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
-            var admittedPerson = _context.Teachers.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
-            {
-                admittedPerson.Status = "Admitted";
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
-                if (personCache != null)
-                {
-                    personCache.Status = admittedPerson.Status;
-                    WebCache.Remove("LoggedIn" + id.ToString());
-                }
-                else
-                {
-                    personCache = new PersonCacheModel()
-                    {
-                        Id = id,
-                        Role = "Teacher",
-                        Status = admittedPerson.Status
-                    };
-                }
-                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
-                _context.Update(admittedPerson);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return StatusCode(StatusCodes.Status403Forbidden);
-        }
-
-        public async Task<IActionResult> Reject(int id, int userId)
-        {
-            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
-            var admittedPerson = _context.Teachers.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
-            {
-                admittedPerson.Status = "Rejected";
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
-                if (personCache != null)
-                {
-                    personCache.Status = admittedPerson.Status;
-                    WebCache.Remove("LoggedIn" + id.ToString());
-                }
-                else
-                {
-                    personCache = new PersonCacheModel()
-                    {
-                        Id = id,
-                        Role = "Teacher",
-                        Status = admittedPerson.Status
-                    };
-                }
-                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
-                _context.Update(admittedPerson);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return StatusCode(StatusCodes.Status403Forbidden);
         }
 
         private bool TeacherExists(int id)

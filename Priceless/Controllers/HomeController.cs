@@ -16,6 +16,7 @@ using Priceless.Models.Helpers;
 using Priceless.Services;
 using System.Web.Helpers;
 using Npgsql;
+using Microsoft.AspNetCore.Http;
 
 namespace Priceless.Controllers
 {
@@ -35,6 +36,8 @@ namespace Priceless.Controllers
         public async Task<IActionResult> Index()
         {
             ViewData["Majors"] = await _service.GetAllMajors();
+            ViewData["Admins"] = await _service.GetAllAdmins();
+            ViewData["Curators"] = await _service.GetAllCurators();
             return View();
         }
 
@@ -122,6 +125,59 @@ namespace Priceless.Controllers
         public IActionResult Contacts()
         {
             return View();
+        }
+
+        public async Task<IActionResult> Manage(int id, int userId, bool admit)
+        {
+            var admittingPerson = await _service.GetPersonById(userId);
+            var admittedPerson = await _service.GetPersonById(id);
+            if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
+            {
+                ViewData["id"] = id;
+                ViewData["userId"] = userId;
+                ViewData["admit"] = admit;
+                return View();
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Manage(int id, int userId, string comment, bool admit)
+        {
+            var admittingPerson = await _service.GetPersonById(userId);
+            var admittedPerson = await _service.GetPersonById(id);
+            if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
+            {
+                if (admit)
+                {
+                    admittedPerson.Status = "Admitted";
+                }
+                else
+                {
+                    admittedPerson.Status = "Rejected";
+                }
+                admittedPerson.StatusComment = comment;
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
+                if (personCache != null)
+                {
+                    personCache.Status = admittedPerson.Status;
+                    WebCache.Remove("LoggedIn" + id.ToString());
+                }
+                else
+                {
+                    personCache = new PersonCacheModel()
+                    {
+                        Id = id,
+                        Role = "Teacher",
+                        Status = admittedPerson.Status
+                    };
+                }
+                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
+                await _service.UpdatePerson(admittedPerson);
+                return RedirectToAction("Index");
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

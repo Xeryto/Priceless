@@ -29,15 +29,31 @@ namespace Priceless.Controllers
         // GET: Students
         public async Task<IActionResult> Index()
         {
-            ViewData["Majors"] = await _context.Majors.ToListAsync();
-            return View(await _context.Students.ToListAsync());
+            var majors = await _context.Majors.ToListAsync();
+            ViewData["Majors"] = majors;
+            ViewData["Process"] = true;
+            Dictionary<int, bool> selectedMajors = new();
+            foreach (var major in majors)
+            {
+                selectedMajors.Add(major.Id, false);
+            }
+            ViewData["SelectedMajors"] = selectedMajors;
+            return View(await _context.Students.Where(i => i.Status == "In process").ToListAsync());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(int[] selectedMajors, bool admitted)
         {
-            ViewData["Majors"] = await _context.Majors.ToListAsync();
+            var majors = await _context.Majors.ToListAsync();
+            ViewData["Majors"] = majors;
+            Dictionary<int, bool> selectedMajorsDict = new();
+            foreach (var major in majors)
+            {
+                selectedMajorsDict.Add(major.Id, selectedMajors.Contains(major.Id));
+            }
+            ViewData["SelectedMajors"] = selectedMajorsDict;
+            ViewData["Process"] = admitted;
             var command = _context.Students.Include(i => i.Admissions).ThenInclude(i => i.Major).AsNoTracking();
             if (admitted)
             {
@@ -354,66 +370,6 @@ namespace Priceless.Controllers
             _context.Students.Remove(student);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> Admit(int id, int userId)
-        {
-            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
-            var admittedPerson = _context.Students.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
-            {
-                admittedPerson.Status = "Admitted";
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
-                if (personCache != null)
-                {
-                    personCache.Status = admittedPerson.Status;
-                    WebCache.Remove("LoggedIn" + id.ToString());
-                }
-                else
-                {
-                    personCache = new PersonCacheModel()
-                    {
-                        Id = id,
-                        Role = "Student",
-                        Status = admittedPerson.Status
-                    };
-                }
-                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
-                _context.Update(admittedPerson);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return StatusCode(StatusCodes.Status403Forbidden);
-        }
-
-        public async Task<IActionResult> Reject(int id, int userId)
-        {
-            var admittingPerson = _context.Teachers.FirstOrDefault(i => i.Id == userId);
-            var admittedPerson = _context.Students.FirstOrDefault(i => i.Id == id);
-            if (admittingPerson != null && admittedPerson != null && admittingPerson.Status == "Admin")
-            {
-                admittedPerson.Status = "Rejected";
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
-                if (personCache != null)
-                {
-                    personCache.Status = admittedPerson.Status;
-                    WebCache.Remove("LoggedIn" + id.ToString());
-                }
-                else
-                {
-                    personCache = new PersonCacheModel()
-                    {
-                        Id = id,
-                        Role = "Student",
-                        Status = admittedPerson.Status
-                    };
-                }
-                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
-                _context.Update(admittedPerson);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return StatusCode(StatusCodes.Status403Forbidden);
         }
 
         private bool StudentExists(int id)

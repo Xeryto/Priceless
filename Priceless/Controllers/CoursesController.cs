@@ -35,7 +35,7 @@ namespace Priceless.Controllers
                 PersonCacheModel personCache = WebCache.Get("LoggedIn" + ids);
                 if (personCache != null)
                 {
-                    if (personCache.Status == "Admin")
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator")
                     {
                         return View(await _context.Courses.ToListAsync());
                     }
@@ -72,7 +72,7 @@ namespace Priceless.Controllers
                 PersonCacheModel personCache = WebCache.Get("LoggedIn" + ids);
                 if (personCache != null)
                 {
-                    if (personCache.Status == "Admin" || teachers.Contains(personCache.Id) || students.Contains(personCache.Id))
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator" || teachers.Contains(personCache.Id) || students.Contains(personCache.Id))
                     {
                         return View(course);
                     }
@@ -146,7 +146,7 @@ namespace Priceless.Controllers
 
         private void PopulateAssignedTeacherData(Course course, int? include = null)
         {
-            var allTeachers = _context.Teachers.Where(s => s.Status == "Admitted" || s.Status == "Admin");
+            var allTeachers = _context.Teachers.Where(s => s.Status == "Admitted" || s.Status == "Admin" || s.Status == "Curator");
             var courseTeachers = new HashSet<int>(course.CourseAssignments.Select(c => c.TeacherId));
             var viewModel = new List<AssignedTeacherData>();
             foreach (var teacher in allTeachers)
@@ -206,7 +206,7 @@ namespace Priceless.Controllers
                 var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
                 if (editor != null)
                 {
-                    if (teachers.Contains(editor.Id) || editor.Status == "Admin")
+                    if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
                         return View(courseEdit);
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
@@ -240,7 +240,7 @@ namespace Priceless.Controllers
                     var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
                     if (editor != null)
                     {
-                        if (teachers.Contains(editor.Id) || editor.Status == "Admin")
+                        if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
                         {
                             if (courseEdit.Image != null)
                             {
@@ -296,7 +296,7 @@ namespace Priceless.Controllers
                 var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
                 if (editor != null)
                 {
-                    if (teachers.Contains(editor.Id) || editor.Status == "Admin")
+                    if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
                     {
                         PopulateAssignedStudentData(course);
                         PopulateAssignedTeacherData(course);
@@ -354,7 +354,7 @@ namespace Priceless.Controllers
                 var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
                 if (editor != null)
                 {
-                    if (teachers.Contains(editor.Id) || editor.Status == "Admin")
+                    if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
                     {
                         if (await TryUpdateModelAsync<Course>(
                         courseToUpdate,
@@ -537,7 +537,7 @@ namespace Priceless.Controllers
                 var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
                 if (editor != null)
                 {
-                    if (teachers.Contains(editor.Id) || editor.Status == "Admin")
+                    if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
                     {
                         return View(course);
                     }
@@ -574,7 +574,7 @@ namespace Priceless.Controllers
                 var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
                 if (editor != null)
                 {
-                    if (teachers.Contains(editor.Id) || editor.Status == "Admin")
+                    if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
                     {
                         _context.Courses.Remove(course);
                         await _context.SaveChangesAsync();
