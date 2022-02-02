@@ -19,6 +19,7 @@ namespace Priceless
         public DbSet<Major> Majors { get; set; }
         public DbSet<Admission> Admissions { get; set; }
         public DbSet<MajorAssignment> MajorAssignments { get; set; }
+        public DbSet<Stream> Streams { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

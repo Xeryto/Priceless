@@ -34,7 +34,9 @@ namespace Priceless
             });
 
             services.AddDbContext<PricelessContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                //options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection"))
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+                );
 
             services.AddTransient(typeof(HomeService));
 

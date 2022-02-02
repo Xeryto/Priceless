@@ -83,7 +83,19 @@ namespace Priceless.Controllers
             {
                 return NotFound();
             }
-
+            var curStream = await _context.Streams.Where(i => i.RegAllowed == true || (i.RegStart <= DateTime.Now && i.RegEnd >= DateTime.Now)).FirstOrDefaultAsync();
+            if (curStream == null)
+            {
+                ViewData["Open"] = false;
+                var nextStream = await _context.Streams.Where(i => i.RegStart >= DateTime.Now).FirstOrDefaultAsync();
+                ViewData["Stream"] = nextStream;
+            }
+            else
+            {
+                ViewData["Open"] = true;
+                ViewData["Stream"] = curStream;
+            }
+            
             return View(student);
         }
 
@@ -93,6 +105,8 @@ namespace Priceless.Controllers
             var student = new Student();
             student.Admissions = new List<Admission>();
             PopulateAssignedMajorData(student);
+            var curStream = _context.Streams.Where(i => i.RegAllowed == true || (i.RegStart <= DateTime.Now && i.RegEnd >= DateTime.Now)).FirstOrDefault();
+            ViewData["Open"] = curStream != null;
             return View();
         }
 
@@ -105,6 +119,7 @@ namespace Priceless.Controllers
         {
             var mapper = new Mapper(config);
             var student = mapper.Map<StudentPostModel, Student>(studentPost);
+            var curStream = _context.Streams.Where(i => i.RegAllowed == true || (i.RegStart <= DateTime.Now && i.RegEnd >= DateTime.Now)).FirstOrDefault();
             student.Admissions = new List<Admission>();
             if (ModelState.IsValid)
             {
@@ -118,11 +133,18 @@ namespace Priceless.Controllers
                     }
 
                     student.Password = Hash(student.Password);
-                    student.Status = "In process";
+                    if (curStream != null)
+                    {
+                        student.Status = "In process";
+                    }
+                    else
+                    {
+                        student.Status = "Inactive";
+                    }
                     AddStudentMajors(selectedMajors, student);
                     _context.Add(student);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Index), "Home");
                 }
                 else
                 {
@@ -130,6 +152,7 @@ namespace Priceless.Controllers
                 }
             }
             PopulateAssignedMajorData(student);
+            ViewData["Open"] = curStream != null;
             return View(studentPost);
         }
 
@@ -204,6 +227,8 @@ namespace Priceless.Controllers
                 return NotFound();
             }
             PopulateAssignedMajorData(student);
+            var curStream = _context.Streams.Where(i => i.RegAllowed == true || (i.RegStart <= DateTime.Now && i.RegEnd >= DateTime.Now)).FirstOrDefault();
+            ViewData["Open"] = curStream != null;
             return View(student);
         }
 
@@ -285,6 +310,8 @@ namespace Priceless.Controllers
             }
             UpdateStudentMajors(selectedMajors, studentToUpdate);
             PopulateAssignedMajorData(studentToUpdate);
+            var curStream = _context.Streams.Where(i => i.RegAllowed == true || (i.RegStart <= DateTime.Now && i.RegEnd >= DateTime.Now)).FirstOrDefault();
+            ViewData["Open"] = curStream != null;
             return View(studentToUpdate);
         }
 
