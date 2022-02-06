@@ -17,6 +17,8 @@ using Priceless.Services;
 using System.Web.Helpers;
 using Npgsql;
 using Microsoft.AspNetCore.Http;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace Priceless.Controllers
 {
@@ -175,6 +177,26 @@ namespace Priceless.Controllers
                 }
                 WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
                 await _service.UpdatePerson(admittedPerson);
+
+                var emailMessage = new MimeMessage();
+
+                emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*"));
+                emailMessage.To.Add(new MailboxAddress("", admittedPerson.Login));
+                emailMessage.Subject = "Заявка в Priceless";
+                emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+                {
+                    Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте</a> зайдя в личный кабинет.</p>"
+                };
+
+                using (var client = new SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.mail.ru", 465, true);
+                    await client.AuthenticateAsync("*", "*");
+                    await client.SendAsync(emailMessage);
+
+                    await client.DisconnectAsync(true);
+                }
+
                 return RedirectToAction("Index");
             }
             return StatusCode(StatusCodes.Status403Forbidden);
