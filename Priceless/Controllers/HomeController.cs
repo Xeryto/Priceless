@@ -19,6 +19,7 @@ using Npgsql;
 using Microsoft.AspNetCore.Http;
 using MimeKit;
 using MailKit.Net.Smtp;
+using System.Security.Cryptography;
 
 namespace Priceless.Controllers
 {
@@ -37,9 +38,110 @@ namespace Priceless.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var curStream = await _service.GetCurrentStream();
+
+            if (curStream != null)
+            {
+                if (!curStream.Notified)
+                {
+                    var emailMessage = new MimeMessage();
+
+                    emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
+                    var students = await _service.GetAllStudents();
+                    foreach (var student in students)
+                    {
+                        emailMessage.To.Add(new MailboxAddress("", student.Login));
+                    }
+                    emailMessage.Subject = "Открыта регистрация в Priceless";
+                    emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+                    {
+                        Text = "<p>Здравствуйте! Рады сообщить, что мы открываем запись на новый поток проекта Priceless education. Следить за изменением статуса заявки вы сможете в личном кабинете на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте</a>.</p>"
+                    };
+
+                    using (var client = new SmtpClient())
+                    {
+                        await client.ConnectAsync("smtp.mail.ru", 465, true);
+                        await client.AuthenticateAsync("*email*", "*password*");
+                        await client.SendAsync(emailMessage);
+
+                        await client.DisconnectAsync(true);
+                    }
+
+                    curStream.Notified = true;
+                    await _service.UpdateStream(curStream);
+                }
+            }
+            
+
             ViewData["Majors"] = await _service.GetAllMajors();
             ViewData["Admins"] = await _service.GetAllAdmins();
             ViewData["Curators"] = await _service.GetAllCurators();
+            return View();
+        }
+
+        public IActionResult Restore(bool exists = true)
+        {
+            ViewData["Exists"] = exists;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Restore(string login)
+        {
+            var person = await _service.GetByLogin(login);
+
+            if (person == null)
+            {
+                Restore(false);
+            }
+
+            var emailMessage = new MimeMessage();
+
+            emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
+            emailMessage.To.Add(new MailboxAddress("", login));
+            emailMessage.Subject = "Восстановление пароля";
+            var hash = Hash(person.Id.ToString()).Replace("/", "slash");
+            emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+            {
+                Text = "<p>Здравствуйте! Вы запросили восстановление пароля. Если это были вы, перейдите по <a href='https://pricelessedu.azurewebsites.net/Home/RestoreConfirm/"+hash+"'>ссылке</a> для смены пароля. Иначе, проигнорируйте это письмо.</p>"
+            };
+
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync("smtp.mail.ru", 465, true);
+                await client.AuthenticateAsync("*email*", "*password*");
+                await client.SendAsync(emailMessage);
+
+                await client.DisconnectAsync(true);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        public async Task<IActionResult> RestoreConfirm(string id)
+        {
+            id = id.Replace("slash", "/");
+            var person = await _service.GetById(id);
+            ViewData["Exists"] = person != null;
+            ViewData["Id"] = id;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestoreConfirm(string password, string id)
+        {
+            var person = await _service.GetById(id);
+
+            if (person != null)
+            {
+                person.Password = Hash(password);
+                await _service.UpdatePerson(person);
+                return RedirectToAction("Index", "Home");
+            }
+            ViewData["Exists"] = person != null;
+            ViewData["Id"] = id;
             return View();
         }
 
@@ -180,18 +282,18 @@ namespace Priceless.Controllers
 
                 var emailMessage = new MimeMessage();
 
-                emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*"));
+                emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
                 emailMessage.To.Add(new MailboxAddress("", admittedPerson.Login));
                 emailMessage.Subject = "Заявка в Priceless";
                 emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
                 {
-                    Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте</a> зайдя в личный кабинет.</p>"
+                    Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте,</a> зайдя в личный кабинет.</p>"
                 };
 
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync("smtp.mail.ru", 465, true);
-                    await client.AuthenticateAsync("*", "*");
+                    await client.AuthenticateAsync("*email*", "*password*");
                     await client.SendAsync(emailMessage);
 
                     await client.DisconnectAsync(true);
@@ -214,6 +316,25 @@ namespace Priceless.Controllers
                 }
             }
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private static string Hash(string password)
+        {
+            byte[] salt;
+            byte[] buffer2;
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            using (Rfc2898DeriveBytes bytes = new(password, 0x10, 0x3e8))
+            {
+                salt = bytes.Salt;
+                buffer2 = bytes.GetBytes(0x20);
+            }
+            byte[] dst = new byte[0x31];
+            Buffer.BlockCopy(salt, 0, dst, 1, 0x10);
+            Buffer.BlockCopy(buffer2, 0, dst, 0x11, 0x20);
+            return Convert.ToBase64String(dst);
         }
     }
 }
