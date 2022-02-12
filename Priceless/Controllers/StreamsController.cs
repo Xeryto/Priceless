@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using Priceless;
 using Priceless.Models;
 
@@ -34,8 +36,35 @@ namespace Priceless.Controllers
                 if (person.Status == "Admin" || person.Status == "Curator")
                 {
                     curStream.RegAllowed = open;
+                    curStream.Notified = open;
                     _context.Update(curStream);
                     await _context.SaveChangesAsync();
+
+                    if (open)
+                    {
+                        var emailMessage = new MimeMessage();
+
+                        emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
+                        var students = await _context.Students.ToListAsync();
+                        foreach (var student in students)
+                        {
+                            emailMessage.To.Add(new MailboxAddress("", student.Login));
+                        }
+                        emailMessage.Subject = "Открыта регистрация в Priceless";
+                        emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+                        {
+                            Text = "<p>Здравствуйте! Рады сообщить, что мы открываем запись на новый поток проекта Priceless education. Следить за изменением статуса заявки вы сможете в личном кабинете на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте</a>.</p>"
+                        };
+
+                        using (var client = new SmtpClient())
+                        {
+                            await client.ConnectAsync("smtp.mail.ru", 465, true);
+                            await client.AuthenticateAsync("*email*", "*password*");
+                            await client.SendAsync(emailMessage);
+
+                            await client.DisconnectAsync(true);
+                        }
+                    }
                 }
             }
             return RedirectToAction(nameof(Index), "Home");
@@ -92,6 +121,7 @@ namespace Priceless.Controllers
         {
             if (ModelState.IsValid)
             {
+                stream.Notified = false;
                 _context.Add(stream);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

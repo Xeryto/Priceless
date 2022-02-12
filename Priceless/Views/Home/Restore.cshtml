@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Restore";
+}
+
+<div class="limiter">
+    <div class="container-login100">
+        <div class="wrap-login100">
+            <form class="login100-form validate-form" asp-action="Restore" method="post">
+                <span class="login100-form-title p-b-26">
+                    Сменить пароль
+                </span>
+
+                <input type="hidden" name="id" value="@ViewBag.Id" />
+
+                <div class="wrap-input100 validate-input" data-validate="Вид почты: a@b.c">
+                    <input class="input100" type="email" name="login">
+                    <span class="focus-input100" data-placeholder="Почта восстанавливаемого аккаунта"></span>
+                    @{
+                        if (!ViewBag.Exists)
+                        {   
+                            <span class="text-danger">Неверный логин. Попробуйте еще раз</span>
+                        }
+                    }
+                    
+                </div>
+
+                <div class="container-login100-form-btn">
+                    <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button class="login100-form-btn" type="submit">
+                            Восстановить пароль
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

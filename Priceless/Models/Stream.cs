@@ -16,5 +16,6 @@ namespace Priceless.Models
         [DataType(DataType.Date)]
         public DateTime End { get; set; }
         public bool RegAllowed { get; set; }
+        public bool Notified { get; set; }
     }
 }

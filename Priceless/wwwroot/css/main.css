@@ -369,6 +369,22 @@ iframe {
 	width: 100%;
 }
 
+.big2-input100:focus + .focus-input100::after {
+	top: -25px;
+}
+
+.big2-input100:focus + .focus-input100::before {
+	width: 100%;
+}
+
+.has-val.big2-input100 + .focus-input100::after {
+	top: -25px;
+}
+
+.has-val.big2-input100 + .focus-input100::before {
+	width: 100%;
+}
+
 /*---------------------------------------------*/
 .btn-show-pass {
   font-size: 15px;

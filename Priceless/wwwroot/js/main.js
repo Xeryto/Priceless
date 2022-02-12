@@ -42,6 +42,8 @@
     /*==================================================================
     [ Validate ]*/
     var input = $('.validate-input .input100');
+    var bigInput = $('.validate-input .big-input100');
+    var bigInput2 = $('.validate-input .big2-input100');
 
     $('.validate-form').on('submit',function(){
         var check = true;
@@ -50,6 +52,20 @@
             if(validate(input[i]) == false){
                 showValidate(input[i]);
                 check=false;
+            }
+        }
+
+        for (var i = 0; i < bigInput.length; i++) {
+            if (validate(bigInput[i]) == false) {
+                showValidate(bigInput[i]);
+                check = false;
+            }
+        }
+
+        for (var i = 0; i < bigInput2.length; i++) {
+            if (validate(bigInput2[i]) == false) {
+                showValidate(bigInput2[i]);
+                check = false;
             }
         }
 
