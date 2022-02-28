@@ -44,7 +44,7 @@ namespace Priceless.Controllers
                     {
                         var emailMessage = new MimeMessage();
 
-                        emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
+                        emailMessage.From.Add(new MailboxAddress("Администрация сайта", "priceless.edu@mail.ru"));
                         var students = await _context.Students.ToListAsync();
                         foreach (var student in students)
                         {
@@ -59,7 +59,7 @@ namespace Priceless.Controllers
                         using (var client = new SmtpClient())
                         {
                             await client.ConnectAsync("smtp.mail.ru", 465, true);
-                            await client.AuthenticateAsync("*email*", "*password*");
+                            await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                             await client.SendAsync(emailMessage);
 
                             await client.DisconnectAsync(true);

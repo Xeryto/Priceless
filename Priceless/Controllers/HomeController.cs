@@ -20,6 +20,10 @@ using Microsoft.AspNetCore.Http;
 using MimeKit;
 using MailKit.Net.Smtp;
 using System.Security.Cryptography;
+using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
+using System.Net;
+using System.Text.Json;
 
 namespace Priceless.Controllers
 {
@@ -28,12 +32,75 @@ namespace Priceless.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly HomeService _service;
+        private readonly string domain = "https://localhost:5001/";
 
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, HomeService service)
         {
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
             _service = service;
+        }
+
+        [HttpPost]
+        public async Task<string> SaveFile(IFormFile file)
+        {
+            if (file != null)
+            {
+
+            }
+            if (file != null && file.Length > 0)
+            {
+                var fileName = Path.GetFileName(file.FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/files", fileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+                FileResponse rfile = new()
+                {
+                    url = domain + "files/" + fileName,
+                    name = fileName
+                };
+                JsonResponse response = new()
+                {
+                    success = 1,
+                    file = rfile
+                };
+                return JsonSerializer.Serialize(response);
+            }
+            JsonResponse response1 = new()
+            {
+                success = 0
+            };
+            return JsonSerializer.Serialize(response1);
+        }
+
+        public string SaveLink(string url)
+        {
+            JsonResponse response = new();
+            if (url != null)
+            {
+                if (!url.Contains("http"))
+                {
+                    response.link = "https://" + url;
+                }
+                else
+                {
+                    response.link = url;
+                }
+            }
+            else
+            {
+                response.link = url;
+            }
+            LinkResponse rlink = new()
+            {
+                title = url
+            };
+            response.success = 1;
+            response.meta = rlink;
+            return JsonSerializer.Serialize(response);
         }
 
         public async Task<IActionResult> Index()
@@ -46,7 +113,7 @@ namespace Priceless.Controllers
                 {
                     var emailMessage = new MimeMessage();
 
-                    emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
+                    emailMessage.From.Add(new MailboxAddress("Администрация сайта", "priceless.edu@mail.ru"));
                     var students = await _service.GetAllStudents();
                     foreach (var student in students)
                     {
@@ -61,7 +128,7 @@ namespace Priceless.Controllers
                     using (var client = new SmtpClient())
                     {
                         await client.ConnectAsync("smtp.mail.ru", 465, true);
-                        await client.AuthenticateAsync("*email*", "*password*");
+                        await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                         await client.SendAsync(emailMessage);
 
                         await client.DisconnectAsync(true);
@@ -98,7 +165,7 @@ namespace Priceless.Controllers
 
             var emailMessage = new MimeMessage();
 
-            emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
+            emailMessage.From.Add(new MailboxAddress("Администрация сайта", "priceless.edu@mail.ru"));
             emailMessage.To.Add(new MailboxAddress("", login));
             emailMessage.Subject = "Восстановление пароля";
             var hash = Hash(person.Id.ToString()).Replace("/", "slash");
@@ -110,7 +177,7 @@ namespace Priceless.Controllers
             using (var client = new SmtpClient())
             {
                 await client.ConnectAsync("smtp.mail.ru", 465, true);
-                await client.AuthenticateAsync("*email*", "*password*");
+                await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                 await client.SendAsync(emailMessage);
 
                 await client.DisconnectAsync(true);
@@ -282,7 +349,7 @@ namespace Priceless.Controllers
 
                 var emailMessage = new MimeMessage();
 
-                emailMessage.From.Add(new MailboxAddress("Администрация сайта", "*email*"));
+                emailMessage.From.Add(new MailboxAddress("Администрация сайта", "priceless.edu@mail.ru"));
                 emailMessage.To.Add(new MailboxAddress("", admittedPerson.Login));
                 emailMessage.Subject = "Заявка в Priceless";
                 emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
@@ -293,7 +360,7 @@ namespace Priceless.Controllers
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync("smtp.mail.ru", 465, true);
-                    await client.AuthenticateAsync("*email*", "*password*");
+                    await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                     await client.SendAsync(emailMessage);
 
                     await client.DisconnectAsync(true);
