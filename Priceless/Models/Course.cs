@@ -11,5 +11,8 @@ namespace Priceless.Models
         public byte[] Image { get; set; }
         public ICollection<Enrollment> Enrollments { get; set; }
         public ICollection<CourseAssignment> CourseAssignments { get; set; }
+        public string Uploads { get; set; }
+        public ICollection<Page> Pages { get; set; }
+        public ICollection<Exercise> Exercises { get; set; }
     }
 }
