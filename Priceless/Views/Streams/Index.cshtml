@@ -1,0 +1,83 @@
+@using System.Web.Helpers;
+@using Priceless.Models.Helpers;
+
+@model IEnumerable<Priceless.Models.Stream>
+
+@{ ViewData["Title"] = "Index";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator")
+        {
+<h1 style="text-align: center;">
+    <a asp-action="Create">Добавить новый</a>
+</h1>
+<div class="container">
+    <div class="row">
+        @{ int cnt = 0;
+            int len = Model.Count();
+
+            foreach (var stream in Model)
+            {
+                cnt++;
+                if (cnt % 3 == 1)
+                {
+@:</div><div class="row">
+    if (len - cnt == 0)
+    {
+<div class="col-md-4"></div> }
+else if (len - cnt == 1)
+{
+<div class="col-md-2"></div> }
+}
+
+
+<div class="col-md-4">
+    <div class="wsk-cp-product">
+        <div class="wsk-cp-text" style="padding-top: 0px;">
+            <div class="title-product">
+                <h3>@stream.Name</h3>
+            </div>
+            <div class="description-prod">
+                <p>
+                    Начало регистрации: @stream.RegStart
+                </p>
+                <p>
+                    Конец регистрации: @stream.RegEnd
+                </p>
+                <p>
+                    Начало потока: @stream.Start
+                </p>
+                <p>
+                    Конец потока: @stream.End
+                </p>
+                <p>
+                    <a asp-action="Details" asp-route-id="@stream.Id">Детали</a>
+                    <span>|</span>
+                    <a asp-action="Edit" asp-route-id="@stream.Id">Изменить</a>
+                    <span>|</span>
+                    <a asp-action="Delete" asp-route-id="@stream.Id">Удалить</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div> } }
+    </div>
+
+</div> }
+                else
+                {
+<div class="takeup">
+    <span class="text-danger">Только админы и кураторы могут просматривать потоки</span>
+</div> }
+}
+else
+{
+<div class="takeup">
+    <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+</div> } }

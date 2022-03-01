@@ -1,0 +1,25 @@
+@model Priceless.Models.Exercise
+
+@{
+    ViewData["Title"] = "Details";
+    bool teacher = ViewBag.isTeacher; }
+
+<div>
+    <h4 style="text-align: center; margin-top: 15px;">@Model.Title</h4>
+    <h4 style="text-align: center;">@Model.Deadline</h4>
+    <hr />
+    <div id="editorjs"></div>
+</div>
+<div style="text-align:center">
+    @{ if (teacher)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> <span>|</span>
+                    } }
+    <a asp-action="Pages" asp-controller="Courses" asp-route-id="@Model.CourseId">Back to List</a>
+</div>
+
+<script src="~/js/editorjs.js"></script>
+
+<script>
+    editor(true, JSON.parse("@Model.Json".replace(/&quot;/g, '"')));
+</script>

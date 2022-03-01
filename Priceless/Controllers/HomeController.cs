@@ -32,7 +32,7 @@ namespace Priceless.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly HomeService _service;
-        private readonly string domain = "https://localhost:5001/";
+        private readonly string domain = "http://pricelessedu.azurewebsites.net/";
 
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, HomeService service)
         {

@@ -20,7 +20,7 @@ namespace Priceless.Controllers
         private readonly PricelessContext _context;
         private readonly MapperConfiguration config = new(cfg => cfg
             .CreateMap<TeacherPostModel, Teacher>().ForMember("Image", opt => opt.Ignore()));
-        private readonly string code = Hash("*");
+        private readonly string code = Hash("8PKFA2sf");
 
         public TeachersController(PricelessContext context)
         {

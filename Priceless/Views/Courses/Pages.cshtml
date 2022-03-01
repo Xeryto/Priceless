@@ -1,0 +1,185 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model Priceless.Models.Course
+
+@{
+    ViewData["Title"] = "Details";
+    bool flag = false;
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
+        {
+            flag = true;
+        }
+    }
+}
+
+<div class="container" style="margin: 30px auto;">
+    <div class="row">
+        <div class="col-md-9">
+            <h1 class="bg-custom-2">@Model.Title</h1>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="roundedNavBlock">
+                        <a asp-action="Details" asp-controller="Courses" asp-route-id="@Model.Id" class="courseNav">
+                            <svg class="svg-icon" viewBox="0 0 20 20">
+                                <path d="M16.469,8.924l-2.414,2.413c-0.156,0.156-0.408,0.156-0.564,0c-0.156-0.155-0.156-0.408,0-0.563l2.414-2.414c1.175-1.175,1.175-3.087,0-4.262c-0.57-0.569-1.326-0.883-2.132-0.883s-1.562,0.313-2.132,0.883L9.227,6.511c-1.175,1.175-1.175,3.087,0,4.263c0.288,0.288,0.624,0.511,0.997,0.662c0.204,0.083,0.303,0.315,0.22,0.52c-0.171,0.422-0.643,0.17-0.52,0.22c-0.473-0.191-0.898-0.474-1.262-0.838c-1.487-1.485-1.487-3.904,0-5.391l2.414-2.413c0.72-0.72,1.678-1.117,2.696-1.117s1.976,0.396,2.696,1.117C17.955,5.02,17.955,7.438,16.469,8.924 M10.076,7.825c-0.205-0.083-0.437,0.016-0.52,0.22c-0.083,0.205,0.016,0.437,0.22,0.52c0.374,0.151,0.709,0.374,0.997,0.662c1.176,1.176,1.176,3.088,0,4.263l-2.414,2.413c-0.569,0.569-1.326,0.883-2.131,0.883s-1.562-0.313-2.132-0.883c-1.175-1.175-1.175-3.087,0-4.262L6.51,9.227c0.156-0.155,0.156-0.408,0-0.564c-0.156-0.156-0.408-0.156-0.564,0l-2.414,2.414c-1.487,1.485-1.487,3.904,0,5.391c0.72,0.72,1.678,1.116,2.696,1.116s1.976-0.396,2.696-1.116l2.414-2.413c1.487-1.486,1.487-3.905,0-5.392C10.974,8.298,10.55,8.017,10.076,7.825"></path>
+                            </svg>
+                            Link
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="roundedNavBlock">
+                        <a asp-action="Pages" asp-controller="Courses" asp-route-id="@Model.Id" class="courseNav">
+                            <svg class="svg-icon" viewBox="0 0 20 20">
+                                <path d="M15.475,6.692l-4.084-4.083C11.32,2.538,11.223,2.5,11.125,2.5h-6c-0.413,0-0.75,0.337-0.75,0.75v13.5c0,0.412,0.337,0.75,0.75,0.75h9.75c0.412,0,0.75-0.338,0.75-0.75V6.94C15.609,6.839,15.554,6.771,15.475,6.692 M11.5,3.779l2.843,2.846H11.5V3.779z M14.875,16.75h-9.75V3.25h5.625V7c0,0.206,0.168,0.375,0.375,0.375h3.75V16.75z"></path>
+                            </svg>
+                            Pages
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="roundedNavBlock">
+                        <a asp-action="Files" asp-controller="Courses" asp-route-id="@Model.Id" class="courseNav">
+                            <svg class="svg-icon" viewBox="0 0 20 20">
+                                <path d="M17.927,5.828h-4.41l-1.929-1.961c-0.078-0.079-0.186-0.125-0.297-0.125H4.159c-0.229,0-0.417,0.188-0.417,0.417v1.669H2.073c-0.229,0-0.417,0.188-0.417,0.417v9.596c0,0.229,0.188,0.417,0.417,0.417h15.854c0.229,0,0.417-0.188,0.417-0.417V6.245C18.344,6.016,18.156,5.828,17.927,5.828 M4.577,4.577h6.539l1.231,1.251h-7.77V4.577z M17.51,15.424H2.491V6.663H17.51V15.424z"></path>
+                            </svg>
+                            Files
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="roundedNavBlock">
+                        <a asp-action="Exercises" asp-controller="Courses" asp-route-id="@Model.Id" class="courseNav">
+                            <svg class="svg-icon" viewBox="0 0 20 20">
+                                <path d="M16.557,4.467h-1.64v-0.82c0-0.225-0.183-0.41-0.409-0.41c-0.226,0-0.41,0.185-0.41,0.41v0.82H5.901v-0.82c0-0.225-0.185-0.41-0.41-0.41c-0.226,0-0.41,0.185-0.41,0.41v0.82H3.442c-0.904,0-1.64,0.735-1.64,1.639v9.017c0,0.904,0.736,1.64,1.64,1.64h13.114c0.904,0,1.64-0.735,1.64-1.64V6.106C18.196,5.203,17.461,4.467,16.557,4.467 M17.377,15.123c0,0.453-0.366,0.819-0.82,0.819H3.442c-0.453,0-0.82-0.366-0.82-0.819V8.976h14.754V15.123z M17.377,8.156H2.623V6.106c0-0.453,0.367-0.82,0.82-0.82h1.639v1.23c0,0.225,0.184,0.41,0.41,0.41c0.225,0,0.41-0.185,0.41-0.41v-1.23h8.196v1.23c0,0.225,0.185,0.41,0.41,0.41c0.227,0,0.409-0.185,0.409-0.41v-1.23h1.64c0.454,0,0.82,0.367,0.82,0.82V8.156z"></path>
+                            </svg>
+                            Exercises
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row" style="justify-content:center; margin-bottom: 10px;">
+                @{
+                    if (flag)
+                    {
+                        <a asp-action="Create" asp-controller="Pages" asp-route-courseId="@Model.Id">Create new</a>
+                    }
+                    foreach (var curPage in Model.Pages)
+                    {
+                        @:</div><div class="row pagesBlockRow">
+                        @:<div class="pagesBlock">
+                            <svg class="svg-icon" viewBox="0 0 20 20" style="height: 30px;">
+                                <path d="M15.475,6.692l-4.084-4.083C11.32,2.538,11.223,2.5,11.125,2.5h-6c-0.413,0-0.75,0.337-0.75,0.75v13.5c0,0.412,0.337,0.75,0.75,0.75h9.75c0.412,0,0.75-0.338,0.75-0.75V6.94C15.609,6.839,15.554,6.771,15.475,6.692 M11.5,3.779l2.843,2.846H11.5V3.779z M14.875,16.75h-9.75V3.25h5.625V7c0,0.206,0.168,0.375,0.375,0.375h3.75V16.75z"></path>
+                            </svg>
+                            <a asp-action="Details" asp-controller="Pages" asp-route-id="@curPage.Id" style="margin-left:10px;">@curPage.Title</a>
+                        @:</div>
+                        
+                    }
+                }
+            </div>
+        </div>
+        <div class="col-md-3">
+            @{
+                if (Model.Image != null)
+                {
+                    <img src="data:image; base64,@Convert.ToBase64String(Model.Image)" alt="courseImage" style="width: 100%" />
+                }
+                else
+                {
+                    <img src="~/img/major.png" alt="courseImage" style="width: 100%" />
+                }
+                <hr />
+                <h6>Учителя</h6>
+                var teachers = Model.CourseAssignments.Select(i => i.Teacher);
+                var students = Model.Enrollments.Select(i => i.Student);
+                int cnt = 0;
+                int cnt2 = 0;
+                <div class="container">
+                    <div class="row">
+                        @{
+                            foreach (var teacher in teachers)
+                            {
+                                cnt++;
+                                if (cnt % 4 == 1)
+                                {
+                                @:</div><div class="row">
+                                }
+
+                                <div class="col-md-3">
+                                    @{
+                                        if (teacher.Image == null)
+                                        {
+                                            <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" />
+
+                                        }
+                                        else
+                                        {
+                                            <img src="data:image; base64,@Convert.ToBase64String(teacher.Image)" alt="user" class="rounded-circle" />
+                                        }
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <hr />
+                <h6>Ученики</h6>
+                <div class="container">
+                    <div class="row">
+                        @{
+                            foreach (var student in students)
+                            {
+                                cnt2++;
+                                if (cnt2 % 4 == 1)
+                                {
+                                @:</div><div class="row">
+                                }
+
+                                <div class="col-md-3">
+                                    @{
+                                        if (student.Image == null)
+                                        {
+                                            <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" />
+
+                                        }
+                                        else
+                                        {
+                                            <img src="data:image; base64,@Convert.ToBase64String(student.Image)" alt="user" class="rounded-circle" />
+                                        }
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <hr />
+                <h6>Ссылки</h6>
+                <p>
+                    <a href="@Model.Link">@Model.Link</a>
+                </p>
+                <hr />
+                <p>
+                    <a asp-action="Index">Вернуться к списку</a>
+                    @{ if (flag)
+                        {
+                            <span>|</span>
+                            <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
+                            <span>|</span>
+                            <a asp-action="Delete" asp-route-id="@Model.Id">Удалить</a>
+                        } }
+                </p>
+            }
+
+        </div>
+    </div>
+</div>

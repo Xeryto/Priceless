@@ -1,0 +1,69 @@
+@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model Priceless.Models.Stream
+
+@{
+    ViewData["Title"] = "Delete";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator")
+        {
+            <div class="container">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
+            <div class="wsk-cp-product">
+                <div class="wsk-cp-text">
+                    <div class="title-product">
+                        <h3>@Model.Name</h3>
+                    </div>
+                    <div class="description-prod">
+                        <p>
+                            Начало регистрации: @Model.RegStart
+                        </p>
+                        <p>
+                            Конец регистрации: @Model.RegEnd
+                        </p>
+                        <p>
+                            Начало потока: @Model.Start
+                        </p>
+                        <p>
+                            Конец потока: @Model.End
+                        </p>
+                        <p>
+                            Вы уверены что хотите удалить этот поток?
+                        </p>
+                        <form asp-action="Delete">
+                            <input type="hidden" asp-for="Id" />
+                            <input type="submit" value="Удалить" class="btn btn-danger" /> |
+                            <a asp-action="Index">Вернуться к списку</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        }
+        else
+{
+    <div class="takeup">
+        <span class="text-danger">Только админы и кураторы могут удалять потоки</span>
+    </div>
+}
+}
+else
+{
+<div class="takeup">
+    <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+</div>
+
+}
+}

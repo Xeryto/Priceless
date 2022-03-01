@@ -1,0 +1,88 @@
+@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model Priceless.Models.Stream
+
+@{
+    ViewData["Title"] = "Create";
+                string ids;
+                PersonCacheModel personCache = null;
+                if (Context.Request.Cookies.TryGetValue("Id", out ids))
+                {
+                    personCache = WebCache.Get("LoggedIn" + ids);
+                }
+                if (personCache != null)
+                {
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator")
+                    {
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-login100">
+                <form class="login100-form validate-form" asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="RegAllowed" value="false" />
+
+                    <span class="login100-form-title p-b-26">
+                        Создать поток
+                    </span>
+
+                    <div class="wrap-input100 validate-input" data-validate="Введите название">
+                        <input class="input100" asp-for="Name">
+                        <span class="focus-input100" data-placeholder="Название"></span>
+                    </div>
+
+                    <div class="wrap-input100 validate-input" data-validate="Введите дату начала потока">
+                        <input class="input100 has-val" asp-for="Start" type="date">
+                        <span class="focus-input100" data-placeholder="Дата начала потока"></span>
+                    </div>
+
+                    <div class="wrap-input100 validate-input" data-validate="Введите дату конца потока">
+                        <input class="input100 has-val" asp-for="End" type="date">
+                        <span class="focus-input100" data-placeholder="Дата конца потока"></span>
+                    </div>
+
+                    <div class="wrap-input100 validate-input" data-validate="Введите дату начала регистрации потока">
+                        <input class="input100 has-val" asp-for="RegStart" type="date">
+                        <span class="focus-input100" data-placeholder="Дата начала регистрации потока"></span>
+                    </div>
+
+                    <div class="wrap-input100 validate-input" data-validate="Введите дату конца регистрации потока">
+                        <input class="input100 has-val" asp-for="RegEnd" type="date">
+                        <span class="focus-input100" data-placeholder="Дата конца регистрации потока"></span>
+                    </div>
+
+                    <div class="container-login100-form-btn">
+                        <div class="wrap-login100-form-btn">
+                            <div class="login100-form-bgbtn"></div>
+                            <button class="login100-form-btn" type="submit">
+                                Создать
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-center p-t-30">
+                        <a asp-action="Index">Вернуться к списку</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="takeup">
+        <span class="text-danger">Только админы и кураторы могут создавать потоки</span>
+    </div>
+}
+}
+else
+{
+<div class="takeup">
+    <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+</div>
+
+}
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
