@@ -1,0 +1,79 @@
+﻿@using System.Web.Helpers;
+@using Priceless.Models.Helpers;
+
+@model Priceless.Models.Major
+
+@{
+    ViewData["Title"] = "Details";
+    bool flag = false;
+    bool logged = false;
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        logged = true;
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
+        {
+            flag = true;
+        }
+    }
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
+            <div class="wsk-cp-product">
+                <div class="wsk-cp-img">
+                    @{ if (Model.Image == null)
+                        {
+            <img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+        else
+        {
+<img src="data:image; base64,@Convert.ToBase64String(Model.Image)" alt="courseImage" class="img-responsive" /> } }
+                </div>
+                <div class="wsk-cp-text">
+                    @{
+                        if (logged && !flag)
+                        {
+                            <a class="category" asp-action="Edit" asp-controller="Students" asp-route-id="@personCache.Id">
+                                <span>Записаться</span>
+                            </a>
+                        }
+                        else if (logged && flag)
+                        {
+                            <a class="category" asp-action="Edit" asp-controller="Teachers" asp-route-id="@personCache.Id">
+                                <span>Записаться</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="category" asp-action="Create" asp-controller="Students">
+                                <span>Записаться</span>
+                            </a>
+                        }
+                    }
+                    <div class="title-product">
+                        <h3>@Model.Title</h3>
+                    </div>
+                    <div class="description-prod">
+                        <p>
+                            <a asp-action="Index">Вернуться к списку</a>
+                            @{ if (flag)
+                                        {
+                                            <span>|</span>
+                                            <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
+                                            <span>|</span>
+                                            <a asp-action="Delete" asp-route-id="@Model.Id">Удалить</a>
+                                        } }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

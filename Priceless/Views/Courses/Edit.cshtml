@@ -1,0 +1,105 @@
+﻿@model Priceless.Models.Course
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<div class="limiter">
+    <div class="container-login100">
+        <div class="wrap-login100">
+            <form class="login100-form validate-form" asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <span class="login100-form-title p-b-26">
+                    Изменить курс
+                </span>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите название">
+                    <input class="input100 has-val" asp-for="Title">
+                    <span class="focus-input100" data-placeholder="Название"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите ссылку">
+                    <input class="input100 has-val" asp-for="Link">
+                    <span class="focus-input100" data-placeholder="Ссылка"></span>
+                </div>
+
+                <div class="wrap-select100 validate-input">
+                    <span class="focus-input100" data-placeholder="Студенты"></span>
+                    <div class="col-md-offset-2 col-md-10">
+                        <div class="container-fluid">
+                            <div class="row">
+                                @{ int cnt = 0;
+                                    List<Priceless.Models.Helpers.AssignedStudentData> students = ViewBag.Students;
+
+                                    foreach (var student in students)
+                                    {
+                                        if (cnt++ % 1 == 0)
+                                        {
+                    @:</div><div class="row">
+                    }
+            @:<div class="col-md-12">
+                  <label class="control checkbox">
+                      <input type="checkbox"
+                             name="selectedStudents"
+                             value="@student.StudentId"
+                             @(Html.Raw(student.Assigned ? "checked=\"checked\"" : "")) />
+                      <span class="control-indicator"></span>
+                      @student.Name  @student.Login
+                  </label>
+                            @:</div>
+                        } }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wrap-select100 validate-input">
+                    <span class="focus-input100" data-placeholder="Учителя"></span>
+                    <div class="col-md-offset-2 col-md-10">
+                        <div class="container-fluid">
+                            <div class="row">
+                                @{ int cnt2 = 0;
+                                    List<Priceless.Models.Helpers.AssignedTeacherData> teachers = ViewBag.Teachers;
+
+                                    foreach (var teacher in teachers)
+                                    {
+                                        if (cnt2++ % 2 == 0)
+                                        {
+                    @:</div><div class="row">
+                    }
+            @:<div class="col-md-6">
+                  <label class="control checkbox">
+                      <input type="checkbox"
+                             name="selectedTeachers"
+                             value="@teacher.TeacherId"
+                             @(Html.Raw(teacher.Assigned ? "checked=\"checked\"" : "")) />
+                      <span class="control-indicator"></span>
+                      @teacher.Name  @teacher.Login
+                  </label>
+                            @:</div>
+                        } }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container-login100-form-btn">
+                    <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button class="login100-form-btn" type="submit">
+                            Обновить
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center p-t-30">
+                    <a asp-action="Index">Вернуться к списку</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

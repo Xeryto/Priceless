@@ -1,0 +1,274 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model Priceless.Models.Student
+
+@{
+    ViewData["Title"] = "Details";
+    var majors = Model.Admissions.Select(i => i.Major);
+    bool flag = false;
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || personCache.Id == Model.Id || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
+        {
+            if (personCache.Id != Model.Id)
+            {
+                flag = true;
+            }
+            <div class="row pad">
+                <div class="col-md-6">
+                    @{
+                        if (Model.Status == "In process")
+                        {
+                            <h1>Статус заявки: В рассмотрении</h1>
+                        }
+                        else if (Model.Status == "Admitted")
+                        {
+                            <h1>Статус заявки: Принята</h1>
+                            <p>@Model.StatusComment</p>
+                        }
+                        else if (Model.Status == "Rejected")
+                        {
+                            <h1>Статус заявки: Отклонена</h1>
+                            <p>@Model.StatusComment</p>
+                        }
+                        else if (Model.Status == "Inactive")
+                        {
+                            <h1>Статус заявки: Не активна</h1>
+                            <p>Чтобы активировать заявку, когда откроется регистрация на поток, зайдите в изменение профиля, выберите направления подготовки и отметьте галочку пересмотра заявки</p>
+                            if (ViewBag.Open)
+                            {
+                                    <p>В настоящий момент регистрация открыта до @ViewBag.Stream.RegEnd</p>
+                            }
+                            else
+                            {
+                                if (ViewBag.Stream != null)
+                            {
+                                    <p>В настоящий момент регистрация закрыта. Регистрация на следующий поток начнется @ViewBag.Stream.RegStart</p>
+                            } else
+                            {
+                                    <p>В настоящий момент регистрация закрыта. Регистрация на следующий поток скоро начнется</p>
+                            }
+                                
+                            }
+                            <p></p>
+                        }
+                    }
+                </div>
+                <div class="col-md-6" style="text-align:right;">
+                @{
+                    if (flag && Model.Status == "In  process")
+                    {
+                        <a asp-action="Admit" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id">Принять</a>
+                        <span>|</span>
+                        <a asp-action="Reject" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id">Отклонить</a>
+                    }
+                }
+                </div>
+            </div>
+            <hr />
+            <div class="row pad">
+                <div class="col-md-6">
+                    <h2>Personal information</h2>
+                </div>
+                <div class="col-md-6">
+                    <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
+                </div>
+            </div>
+            <div class="row pad">
+                    <div class="row">
+                        <div class="col-md-6" style="text-align: center;">
+                            @{
+                                if (Model.Image != null)
+                                {
+                                    <img src="data:image; base64,@Convert.ToBase64String(Model.Image)" alt="image" class="rounded-circle" style="width: 300px; height: 300px;"/>
+                                }
+                                else
+                                {
+                                    <img src="~/img/default-user-icon.jpg" alt="image" class="rounded-circle" style="width: 300px; height: 300px;"/>
+                                }
+                            }
+                            <dl class="row">
+                                <dt class="col-sm-6">
+                                    Почта
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.Login)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Имя
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.Name)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Номер телефона
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.Phone)
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6" style="text-align: center;">
+                            <dl class="row">
+                                <dt class="col-sm-6">
+                                    Имя родителя
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.ParentName)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Номер телефона родителя
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.ParentPhone)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Город проживания
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.City)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Класс
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.Grade)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Ответ на первый вопрос
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.FirstQA)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Ответ на второй вопрос
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.SecondQA)
+                                </dd>
+                                <dt class="col-sm-6">
+                                    Ответ на третий вопрос
+                                </dt>
+                                <dd class="col-sm-6">
+                                    @Html.DisplayFor(model => model.ThirdQA)
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+            </div>
+            <hr />
+            <div class="row pad bg-custom">
+                <h2>Направления подготовки</h2>
+            </div>
+            <div class="row pad bg-custom">
+                <div class="container">
+    <div class="row">
+        @{ int cnt2 = 0;
+
+                        foreach (var major in majors)
+                        {
+                            cnt2++;
+                            if (cnt2 % 3 == 1)
+                            {
+        @:</div><div class="row">
+                }
+
+
+<div class="col-md-4">
+    <div class="wsk-cp-product">
+        <div class="wsk-cp-img">
+            @{ if (major.Image == null)
+                {
+<img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+else
+{
+<img src="data:image; base64,@Convert.ToBase64String(major.Image)" alt="courseImage" class="img-responsive" /> } }
+        </div>
+        <div class="wsk-cp-text">
+            <div class="title-product">
+                <h3>@major.Title</h3>
+            </div>
+            <div class="description-prod">
+                <p>
+                    <a asp-controller="Majors" asp-action="Details" asp-route-id="@major.Id">Детали</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div> } }
+    </div>
+
+</div>
+
+            </div>
+            <hr />
+            <div class="row pad">
+                <h2>Курсы</h2>
+            </div>
+            <div class="row pad">
+                <div class="container">
+    <div class="row">
+        @{
+            var courses = Model.Enrollments.Select(i => i.Course);
+            int cnt = 0;
+
+            foreach (var course in courses)
+            {
+                cnt++;
+                if (cnt % 3 == 1)
+                {
+@:</div><div class="row">
+}
+
+
+<div class="col-md-4">
+    <div class="wsk-cp-product">
+        <div class="wsk-cp-img">
+            @{ if (course.Image == null)
+                {
+<img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+else
+{
+<img src="data:image; base64,@Convert.ToBase64String(course.Image)" alt="courseImage" class="img-responsive" /> } }
+        </div>
+        <div class="wsk-cp-text">
+            <div class="title-product">
+                <h3>@course.Title</h3>
+            </div>
+            <div class="description-prod">
+                <p>
+                    <a asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id">Детали</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div> } }
+    </div>
+
+</div>
+            </div>
+        }
+    else
+        {
+            <div class="takeup">
+<span class="text-danger">Только студент и учителя могут просматривать эту страницу</span>
+        </div>
+            
+        }
+    }
+    else
+    {
+        <div class="takeup">
+<span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+        </div>
+        
+    }
+}
+

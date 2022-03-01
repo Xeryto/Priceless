@@ -1,0 +1,158 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers; 
+
+@model Priceless.Models.Student
+
+@{
+    ViewData["Title"] = "Edit";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || personCache.Id == Model.Id)
+        {
+<div class="limiter">
+    <div class="container-login100">
+        <div class="wrap-login100">
+            <form class="login100-form validate-form" asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <span class="login100-form-title p-b-26">
+                    Изменить профиль
+                </span>
+
+                <div class="wrap-input100" data-validate="Введите пароль">
+                    <span class="btn-show-pass">
+                        <i class="zmdi zmdi-eye"></i>
+                    </span>
+                    <input class="input100 has-val" type="password" name="oldPas">
+                    <span class="focus-input100" data-placeholder="Старый пароль"></span>
+                </div>
+
+                <div class="wrap-input100" data-validate="Введите пароль">
+                    <span class="btn-show-pass">
+                        <i class="zmdi zmdi-eye"></i>
+                    </span>
+                    <input class="input100 has-val" type="password" name="newPas">
+                    <span class="focus-input100" data-placeholder="Новый пароль"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите имя">
+                    <input class="input100 has-val" asp-for="Name" />
+                    <span class="focus-input100" data-placeholder="Имя"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите класс обучения">
+                    <input class="input100 has-val" asp-for="Grade" min="1" max="11">
+                    <span class="focus-input100" data-placeholder="Класс"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите номер телефона">
+                    <input class="input100 has-val" asp-for="Phone" type="tel" />
+                    <span class="focus-input100" data-placeholder="Номер телефона"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите имя родителя">
+                    <input class="input100 has-val" asp-for="ParentName">
+                    <span class="focus-input100" data-placeholder="Имя родителя"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите номер телефона родителя">
+                    <input class="input100 has-val" asp-for="ParentPhone" />
+                    <span class="focus-input100" data-placeholder="Номер телефона родителя"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите город проживания">
+                    <input class="input100 has-val" asp-for="City" />
+                    <span class="focus-input100" data-placeholder="Город"></span>
+                </div>
+
+                @{
+                    if (ViewBag.Open)
+                    {
+                        <div class="wrap-select100 validate-input">
+                    <span class="focus-input100" data-placeholder="Направления подготовки"></span>
+                    <div class="col-md-offset-2 col-md-10">
+                        <div class="container-fluid">
+                            <div class="row">
+                                @{ int cnt = 0;
+                                    List<Priceless.Models.Helpers.AssignedMajorData> majors = ViewBag.Majors;
+
+                                    foreach (var major in majors)
+                                    {
+                                        if (cnt++ % 2 == 0)
+                                        {
+            @:</div><div class="row">
+            }
+            @:<div class="col-md-6">
+                <label class="control checkbox">
+                    <input type="checkbox"
+                           name="selectedMajors"
+                           value="@major.MajorId"
+                           @(Html.Raw(major.Assigned ? "checked=\"checked\"" : "")) />
+                    <span class="control-indicator"></span>
+                    @major.Title
+                </label>
+                                    @:</div>
+                                } }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wrap-select100 validate-input">
+                    <label class="control checkbox">
+                        <input type="checkbox"
+                               name="reconsider"
+                               value="true" />
+                        <span class="control-indicator"></span>
+                        Нажмите чтобы заявка была пересмотрена
+                    </label>
+                </div>
+                    }
+                }
+
+                
+
+                <div class="container-login100-form-btn">
+                    <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button class="login100-form-btn" type="submit">
+                            Обновить
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center p-t-30">
+                    <a asp-action="Index">Вернуться к списку</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+        }
+        else
+        {
+            <div class="takeup">
+<span class="text-danger">Пользователи могут изменять только свои аккаунты</span>
+        </div>
+            
+        }
+    }
+    else
+    {
+        <div class="takeup">
+<span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+        </div>
+        
+    }
+}
+
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,135 @@
+﻿@model Priceless.Models.Helpers.StudentPostModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="limiter">
+    <div class="container-login100">
+        <div class="wrap-login100">
+            <form class="login100-form validate-form" asp-action="Create" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="login100-form-title p-b-26">
+                    Создать аккаунт (заявку)
+                </span>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите почту">
+                    <input class="input100" type="email" asp-for="Login">
+                    <span class="focus-input100" data-placeholder="Почта"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите пароль">
+                    <span class="btn-show-pass">
+                        <i class="zmdi zmdi-eye"></i>
+                    </span>
+                    <input class="input100" type="password" asp-for="Password">
+                    <span class="focus-input100" data-placeholder="Пароль"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите полное имя">
+                    <input class="input100" asp-for="Name" />
+                    <span class="focus-input100" data-placeholder="Имя"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите класс обучения">
+                    <input class="input100" asp-for="Grade" min="1" max="11">
+                    <span class="focus-input100" data-placeholder="Класс"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите номер телефона">
+                    <input class="input100" asp-for="Phone" type="tel" />
+                    <span class="focus-input100" data-placeholder="Номер телефона"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите полное имя родителя">
+                    <input class="input100" asp-for="ParentName">
+                    <span class="focus-input100" data-placeholder="Имя родителя"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите номер телефона родителя">
+                    <input class="input100" asp-for="ParentPhone" />
+                    <span class="focus-input100" data-placeholder="Номер телефона родителя"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите город проживания">
+                    <input class="input100" asp-for="City" />
+                    <span class="focus-input100" data-placeholder="Город"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите ответ">
+                    <input class="big2-input100" asp-for="FirstQA" />
+                    <span class="focus-input100" data-placeholder="Для чего ты хочешь участвовать в Priceless Education? Чего ты хочешь от занятий в проекте?"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите ответ">
+                    <input class="big-input100" asp-for="SecondQA" />
+                    <span class="focus-input100" data-placeholder="Почему именно ты должен стать нашим учеником?"></span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Введите ответ">
+                    <input class="big-input100" asp-for="ThirdQA" />
+                    <span class="focus-input100" data-placeholder="Как ты оцениваешь свои текущие знания в выбранных направлениях?"></span>
+                </div>
+
+                <div class="wrap-select100 validate-input">
+                    <p style="color: #999999">Картинка</p>
+                    <label class="file">
+                        <input type="file" id="file" aria-label="File browser example" asp-for="Image">
+                        <span class="file-custom"></span>
+                    </label>
+                </div>
+
+                @{
+                    if (ViewBag.Open)
+                    {
+                        <div class="wrap-select100 validate-input">
+                    <span class="focus-input100" data-placeholder="Направления подготовки"></span>
+                    <div class="col-md-offset-2 col-md-10">
+                        <div class="container-fluid">
+                            <div class="row">
+                                @{ int cnt = 0;
+                                    List<Priceless.Models.Helpers.AssignedMajorData> majors = ViewBag.Majors;
+
+                                    foreach (var major in majors)
+                                    {
+                                        if (cnt++ % 2 == 0)
+                                        {
+                        @:</div><div class="row">
+                        }
+                        @:<div class="col-md-6">
+                            <label class="control checkbox">
+                                <input type="checkbox"
+                                       name="selectedMajors"
+                                       value="@major.MajorId"
+                                       @(Html.Raw(major.Assigned ? "checked=\"checked\"" : "")) />
+                                <span class="control-indicator"></span>
+                                @major.Title 
+                            </label>
+                                                        @:</div>
+                                                    } }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    }
+                }
+
+                <div class="container-login100-form-btn">
+                    <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button class="login100-form-btn" type="submit">
+                            Зарегистрироваться
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center p-t-30">
+                    <a asp-action="Index">Вернуться к списку</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

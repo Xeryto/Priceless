@@ -1,0 +1,80 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model IEnumerable<Priceless.Models.Course>
+
+@{
+    ViewData["Title"] = "Index";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+ }
+
+@{
+    if (personCache.Status == "Admin" || personCache.Status == "Curator")
+    {
+        <h1 style="text-align: center;">
+            <a asp-action="Create">Создать новый</a>
+        </h1>
+    }
+}
+
+
+<div class="container">
+    <div class="row">
+        @{ int cnt = 0;
+            int len = Model.Count();
+
+            foreach (var course in Model)
+            {
+                cnt++;
+                if (cnt % 3 == 1)
+                {
+@:</div><div class="row">
+    if (len - cnt == 0)
+    {
+<div class="col-md-4"></div> }
+else if (len - cnt == 1)
+{
+<div class="col-md-2"></div> }
+}
+
+
+<div class="col-md-4">
+    <div class="wsk-cp-product">
+        <div class="wsk-cp-img">
+            @{ if (course.Image == null)
+                {
+<img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+else
+{
+<img src="data:image; base64,@Convert.ToBase64String(course.Image)" alt="courseImage" class="img-responsive" /> } }
+        </div>
+        <div class="wsk-cp-text">
+            <div class="title-product">
+                <h3>@course.Title</h3>
+            </div>
+            <div class="description-prod">
+                <p>
+                    <a asp-action="Details" asp-route-id="@course.Id">Детали</a>
+                    @{
+                        if (personCache.Status == "Admin" || personCache.Status == "Curator")
+                        {
+                            <span>|</span>
+                            <a asp-action="Edit" asp-route-id="@course.Id">Изменить</a>
+                            <span>|</span>
+                            <a asp-action="Delete" asp-route-id="@course.Id">Удалить</a>
+                        }
+                    }
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</div> } }
+    </div>
+
+</div>
