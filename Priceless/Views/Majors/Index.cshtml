@@ -1,0 +1,101 @@
+﻿@using System.Web.Helpers;
+@using Priceless.Models.Helpers;
+
+@model IEnumerable<Priceless.Models.Major>
+
+@{
+    ViewData["Title"] = "Index";
+    bool flag = false;
+    bool logged = false;
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        logged = true;
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
+        {
+            flag = true;
+            <h1 style="text-align: center;">
+                <a asp-action="Create">Добавить новое</a>
+            </h1>
+        }
+    }
+}
+
+<div class="container">
+    <div class="row">
+        @{ int cnt = 0;
+                        int len = Model.Count();
+
+                        foreach (var major in Model)
+                        {
+                            cnt++;
+                            if (cnt % 3 == 1)
+                            {
+        @:</div><div class="row">
+            if (len - cnt == 0)
+            {
+<div class="col-md-4"></div> }
+                    else if (len - cnt == 1)
+                    {
+<div class="col-md-2"></div> }
+                }
+
+
+<div class="col-md-4">
+    <div class="wsk-cp-product">
+        <div class="wsk-cp-img">
+            @{ if (major.Image == null)
+                {
+<img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+else
+{
+<img src="data:image; base64,@Convert.ToBase64String(major.Image)" alt="courseImage" class="img-responsive" /> } }
+        </div>
+        <div class="wsk-cp-text">
+            @{
+                if (logged && !flag)
+                {
+                    <a class="category" asp-action="Edit" asp-controller="Students" asp-route-id="@personCache.Id">
+                        <span>Записаться</span>
+                    </a>
+                }
+                else if (logged && flag)
+                {
+                    <a class="category" asp-action="Edit" asp-controller="Teachers" asp-route-id="@personCache.Id">
+                        <span>Записаться</span>
+                    </a>
+                }
+                else
+                {
+                    <a class="category" asp-action="Create" asp-controller="Students">
+                        <span>Записаться</span>
+                    </a>
+                }
+            }
+            <div class="title-product">
+                <h3>@major.Title</h3>
+            </div>
+            <div class="description-prod">
+                <p>
+                    <a asp-action="Details" asp-route-id="@major.Id">Детали</a>
+                    @{ if (flag)
+                                        {
+                                            <span>|</span>
+                                            <a asp-action="Edit" asp-route-id="@major.Id">Изменить</a>
+                                            <span>|</span>
+                                            <a asp-action="Delete" asp-route-id="@major.Id">Удалить</a>
+                                        } }
+
+                </p>
+            </div>
+        </div>
+    </div>
+</div> } }
+    </div>
+
+</div>

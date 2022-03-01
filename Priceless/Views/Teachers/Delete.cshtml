@@ -1,0 +1,66 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model Priceless.Models.Teacher
+
+@{
+    ViewData["Title"] = "Delete";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || personCache.Id == Model.Id)
+        {
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-4">
+                <div class="wsk-cp-product">
+                    <div class="wsk-cp-img">
+                        @{ if (Model.Image == null)
+                            {
+        <img src="~/img/default-user-icon.jpg" alt="courseImage" class="img-responsive" /> }
+    else
+    {
+    <img src="data:image; base64,@Convert.ToBase64String(Model.Image)" alt="courseImage" class="img-responsive" /> } }
+                    </div>
+                    <div class="wsk-cp-text">
+                        <div class="title-product">
+                            <h3>@Model.Name</h3>
+                        </div>
+                        <div class="description-prod">
+                            <p>
+                                Вы уверены что хотите удалить этот аккаунт?
+                            </p>
+                            <form asp-action="Delete">
+                                <input type="hidden" asp-for="Id" />
+                                <input type="submit" value="Удалить" class="btn btn-danger" /> |
+                                <a asp-action="Index">Вернуться к списку</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        }
+        else
+        {
+            <div class="takeup">
+<span class="text-danger">Пользователи могут изменять только свои аккаунты</span>
+        </div>
+            
+        }
+    }
+    else
+    {
+        <div class="takeup">
+<span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+        </div>
+        
+    }
+}

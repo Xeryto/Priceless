@@ -1,0 +1,152 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model IEnumerable<Priceless.Models.Student>
+
+@{
+    ViewData["Title"] = "Index";
+    Dictionary<int, bool> dict = ViewBag.SelectedMajors;
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Role == "Teacher" && (personCache.Status == "Admitted" || personCache.Status == "Admin" || personCache.Status == "Curator"))
+        {
+            <form asp-action="Index" method="post">
+                <div class="row">
+                    <div class="col-md-10">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="control checkbox">
+                                    @{ if (ViewBag.Process)
+                                        {
+                            <input type="checkbox" value="true" name="admitted" checked /> }
+                                                else
+                                                {
+                            <input type="checkbox" value="true" name="admitted" /> } }
+                                    <span class="control-indicator"></span>
+                                    Просмотреть непринятые заявки
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            @{ int cnt2 = 0;
+                                                    List<Major> majors = ViewBag.Majors;
+
+                                                    foreach (var major in majors)
+                                                    {
+                                                        if (cnt2++ % 2 == 0)
+                                                        {
+                            @:</div><div class="row">
+                            }
+                    @:<div class="col-md-6">
+                        <label class="control checkbox">
+                            @{
+                                if (dict[major.Id])
+                                {
+                                    <input type="checkbox"
+                                   name="selectedMajors"
+                                   value="@major.Id" checked/>
+                        }
+                                else
+                        {
+                            <input type="checkbox"
+                                   name="selectedMajors"
+                                   value="@major.Id" />
+                        }
+                            }
+                            <span class="control-indicator"></span>
+                            @major.Title
+                        </label>
+                                            @:</div>
+                                        } }
+                        </div>
+                    </div>
+                    <div class="col-md-2" style="display: flex; justify-content: center; align-items: center;">
+                        <button type="submit" class="btn btn-primary">Обновить</button>
+                    </div>
+                </div>
+            </form>
+            <div class="container">
+    <div class="row">
+        @{ int cnt = 0;
+                        int len = Model.Count();
+
+                        foreach (var student in Model)
+                        {
+                            cnt++;
+                            if (cnt % 3 == 1)
+                            {
+        @:</div><div class="row">
+            if (len - cnt == 0)
+            {
+<div class="col-md-4"></div> }
+                    else if (len - cnt == 1)
+                    {
+<div class="col-md-2"></div> }
+                }
+
+
+<div class="col-md-4">
+    <div class="wsk-cp-product">
+        <div class="wsk-cp-img">
+            @{ if (student.Image == null)
+                {
+<img src="~/img/default-user-icon.jpg" alt="courseImage" class="img-responsive" /> }
+else
+{
+<img src="data:image; base64,@Convert.ToBase64String(student.Image)" alt="courseImage" class="img-responsive" /> } }
+        </div>
+        <div class="wsk-cp-text">
+            <div class="title-product">
+                <h3>@student.Name</h3>
+                <h3>@student.Login</h3>
+            </div>
+            <div class="description-prod">
+                @{
+                    if (student.Status == "In process")
+                {
+                                <p>
+                                    <a asp-controller="Home" asp-action="Manage" asp-route-id="@student.Id" asp-route-userId="@personCache.Id" asp-route-admit="true">Принять</a>
+                                    |
+                                    <a asp-controller="Home" asp-action="Manage" asp-route-id="@student.Id" asp-route-userId="@personCache.Id" asp-route-admit="false">Отклонить</a>
+                                </p>
+                }
+                }
+                <p>
+                    <a asp-action="Details" asp-route-id="@student.Id">Детали</a>
+                    <span>|</span>
+                    <a asp-action="Edit" asp-route-id="@student.Id">Изменить</a>
+                    <span>|</span>
+                    <a asp-action="Delete" asp-route-id="@student.Id">Удалить</a>
+
+                </p>
+            </div>
+        </div>
+    </div>
+</div> } }
+    </div>
+
+</div>
+
+        }
+        else
+        {
+            <div class="takeup">
+<span class="text-danger">Только принятые учителя могут просматривать эту страницу</span>
+        </div>
+            
+        }
+    }
+    else
+    {
+        <div class="takeup">
+<span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+        </div>
+        
+    }
+}

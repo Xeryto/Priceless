@@ -1,0 +1,59 @@
+@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model Priceless.Models.Stream
+
+@{ ViewData["Title"] = "Details";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator")
+        {
+<div class="container">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
+            <div class="wsk-cp-product">
+                <div class="wsk-cp-text" style="padding-top: 0px;">
+                    <div class="title-product">
+                        <h3>@Model.Name</h3>
+                    </div>
+                    <div class="description-prod">
+                        <p>
+                            Начало регистрации: @Model.RegStart
+                        </p>
+                        <p>
+                            Конец регистрации: @Model.RegEnd
+                        </p>
+                        <p>
+                            Начало потока: @Model.Start
+                        </p>
+                        <p>
+                            Конец потока: @Model.End
+                        </p>
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a> |
+                            <a asp-action="Index">Вернуться к списку</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> }
+else
+{
+<div class="takeup">
+    <span class="text-danger">Только админы и кураторы могут просматривать потоки</span>
+</div> }
+}
+else
+{
+<div class="takeup">
+    <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+</div> } }

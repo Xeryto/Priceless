@@ -1,0 +1,76 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model MajorPostModel
+
+@{
+    ViewData["Title"] = "Edit";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
+        {
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-login100">
+                <form class="login100-form validate-form" asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <span class="login100-form-title p-b-26">
+                        Изменить направление подготовки
+                    </span>
+
+                    <div class="wrap-input100 validate-input" data-validate="Введите название">
+                        <input class="input100 has-val" asp-for="Title">
+                        <span class="focus-input100" data-placeholder="Название"></span>
+                    </div>
+
+                    <div class="wrap-select100 validate-input">
+                        <p style="color: #999999">Картинка</p>
+                        <label class="file">
+                            <input type="file" id="file" aria-label="File browser example" asp-for="Image" />
+                            <span class="file-custom"></span>
+                        </label>
+                    </div>
+
+                    <div class="container-login100-form-btn">
+                        <div class="wrap-login100-form-btn">
+                            <div class="login100-form-bgbtn"></div>
+                            <button class="login100-form-btn" type="submit">
+                                Изменить
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-center p-t-30">
+                        <a asp-action="Index">Вернуться к списку</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+        }
+    else
+        {
+            <div class="takeup">
+<span class="text-danger">Только учителя могут изменять направления подготовки</span>
+        </div>
+            
+        }
+    }
+    else
+    {
+        <div class="takeup">
+<span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+        </div>
+        
+    }
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

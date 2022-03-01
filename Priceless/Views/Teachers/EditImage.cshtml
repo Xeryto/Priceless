@@ -1,0 +1,71 @@
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@model Priceless.Models.Helpers.ImageEditModel
+
+@{
+    ViewData["Title"] = "Edit image";
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if (personCache.Status == "Admin" || personCache.Status == "Curator" || personCache.Id == Model.Id)
+        {
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-login100">
+                <form class="login100-form validate-form" asp-action="EditImage" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <span class="login100-form-title p-b-26">
+                        Изменить картинку
+                    </span>
+
+                    <div class="wrap-select100 validate-input">
+                        <p style="color: #999999">Картинка</p>
+                        <label class="file">
+                            <input type="file" id="file" aria-label="File browser example" asp-for="Image">
+                            <span class="file-custom"></span>
+                        </label>
+                    </div>
+
+                    <div class="container-login100-form-btn">
+                        <div class="wrap-login100-form-btn">
+                            <div class="login100-form-bgbtn"></div>
+                            <button class="login100-form-btn" type="submit">
+                                Обновить
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-center p-t-30">
+                        <a asp-action="Index">Вернуться к списку</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+        }
+        else
+        {
+            <div class="takeup">
+                <span class="text-danger">Пользователи могут изменять только свои аккаунты</span>
+            </div>
+
+        }
+    }
+    else
+    {
+        <div class="takeup">
+            <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+        </div>
+        
+    }
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -26,6 +26,161 @@ namespace Priceless.Controllers
             _context = context;
         }
 
+        public async Task<IActionResult> Pages(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var course = await _context.Courses
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Teacher)
+                .Include(i => i.Enrollments).ThenInclude(i => i.Student)
+                .Include(i => i.Exercises)
+                .Include(i => i.Pages)
+                .AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+
+            var teachers = course.CourseAssignments.Select(i => i.TeacherId);
+            var students = course.Enrollments.Select(i => i.StudentId);
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            string ids;
+            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids) && ids != null)
+            {
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + ids);
+                if (personCache != null)
+                {
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator" || teachers.Contains(personCache.Id) || students.Contains(personCache.Id))
+                    {
+                        return View(course);
+                    }
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+                return StatusCode(StatusCodes.Status403Forbidden);
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        public async Task<IActionResult> Files(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var course = await _context.Courses
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Teacher)
+                .Include(i => i.Enrollments).ThenInclude(i => i.Student)
+                .Include(i => i.Exercises)
+                .Include(i => i.Pages)
+                .AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+
+            var teachers = course.CourseAssignments.Select(i => i.TeacherId);
+            var students = course.Enrollments.Select(i => i.StudentId);
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            string ids;
+            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids) && ids != null)
+            {
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + ids);
+                if (personCache != null)
+                {
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator" || teachers.Contains(personCache.Id) || students.Contains(personCache.Id))
+                    {
+                        return View(course);
+                    }
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+                return StatusCode(StatusCodes.Status403Forbidden);
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditFiles(int id, string formFile)
+        {
+            var course = await _context.Courses
+                    .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (ModelState.IsValid)
+            {
+                string ids;
+                PersonCacheModel personCache = null;
+                if (HttpContext.Request.Cookies.TryGetValue("Id", out ids))
+                {
+                    personCache = WebCache.Get("LoggedIn" + ids);
+                }
+
+                var teachers = new HashSet<int>
+                (_context.Teachers.Where(i => i.CourseAssignments.Where(c => c.CourseId == course.Id).Any()).Select(i => i.Id));
+                if (personCache != null)
+                {
+                    var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
+                    if (editor != null)
+                    {
+                        if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
+                        {
+                            course.Uploads = formFile;
+
+                            _context.Update(course);
+                            await _context.SaveChangesAsync();
+
+                            return RedirectToAction("Details", new { id = course.Id });
+                        }
+                        return StatusCode(StatusCodes.Status403Forbidden);
+                    }
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+                return StatusCode(StatusCodes.Status403Forbidden);
+            }
+            return RedirectToAction("Details", new { id = course.Id });
+        }
+
+        public async Task<IActionResult> Exercises(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var course = await _context.Courses
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Teacher)
+                .Include(i => i.Enrollments).ThenInclude(i => i.Student)
+                .Include(i => i.Exercises)
+                .Include(i => i.Pages)
+                .AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+
+            var teachers = course.CourseAssignments.Select(i => i.TeacherId);
+            var students = course.Enrollments.Select(i => i.StudentId);
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            string ids;
+            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids) && ids != null)
+            {
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + ids);
+                if (personCache != null)
+                {
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator" || teachers.Contains(personCache.Id) || students.Contains(personCache.Id))
+                    {
+                        return View(course);
+                    }
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+                return StatusCode(StatusCodes.Status403Forbidden);
+            }
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
         // GET: Courses
         public async Task<IActionResult> Index()
         {
@@ -56,7 +211,9 @@ namespace Priceless.Controllers
 
             var course = await _context.Courses
                 .Include(i => i.CourseAssignments).ThenInclude(i => i.Teacher)
-                .Include(i => i.Enrollments).ThenInclude(i=> i.Student)
+                .Include(i => i.Enrollments).ThenInclude(i => i.Student)
+                .Include(i => i.Exercises)
+                .Include(i => i.Pages)
                 .AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
 
             var teachers = course.CourseAssignments.Select(i => i.TeacherId);
