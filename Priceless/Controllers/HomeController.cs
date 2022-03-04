@@ -32,7 +32,7 @@ namespace Priceless.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly HomeService _service;
-        private readonly string domain = "http://pricelessedu.azurewebsites.net/";
+        private readonly string domain = "https://pricelessedu.azurewebsites.net/";
 
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, HomeService service)
         {
@@ -44,10 +44,6 @@ namespace Priceless.Controllers
         [HttpPost]
         public async Task<string> SaveFile(IFormFile file)
         {
-            if (file != null)
-            {
-
-            }
             if (file != null && file.Length > 0)
             {
                 var fileName = Path.GetFileName(file.FileName);

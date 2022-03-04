@@ -1,4 +1,4 @@
-﻿@model Priceless.Models.Helpers.TeacherPostModel
+﻿@model Priceless.Models.Teacher
 
 @{ ViewData["Title"] = "Create Admin"; }
 
@@ -63,12 +63,14 @@
                 </div>
 
                 <div class="wrap-select100 validate-input">
-                    <p style="color: #999999">Image</p>
+                    <p style="color: #999999">Картинка</p>
                     <label class="file">
-                        <input type="file" id="file" aria-label="File browser example" asp-for="Image">
+                        <input type="file" id="file" aria-label="File browser example" name="formImage">
                         <span class="file-custom"></span>
                     </label>
                 </div>
+
+                <input type="hidden" id="input" asp-for="Image" />
 
                 <div class="wrap-select100 validate-input">
                     <span class="focus-input100" data-placeholder="Направления подготовки"></span>
@@ -115,6 +117,8 @@
         </div>
     </div>
 </div>
+
+<script src="~/js/ajaxPost.js"></script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

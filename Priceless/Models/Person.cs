@@ -14,6 +14,6 @@ namespace Priceless.Models
         public string FirstQA { get; set; }
         public string SecondQA { get; set; }
         public string ThirdQA { get; set; }
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
     }
 }

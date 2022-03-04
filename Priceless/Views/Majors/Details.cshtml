@@ -34,7 +34,7 @@
             <img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
         else
         {
-<img src="data:image; base64,@Convert.ToBase64String(Model.Image)" alt="courseImage" class="img-responsive" /> } }
+<img src="@Model.Image" alt="courseImage" class="img-responsive" /> } }
                 </div>
                 <div class="wsk-cp-text">
                     @{

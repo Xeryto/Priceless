@@ -1,8 +1,6 @@
-﻿@model Priceless.Models.Helpers.StudentPostModel
+﻿@model Priceless.Models.Student
 
-@{
-    ViewData["Title"] = "Create";
-}
+@{ ViewData["Title"] = "Create"; }
 
 <div class="limiter">
     <div class="container-login100">
@@ -74,45 +72,45 @@
                 <div class="wrap-select100 validate-input">
                     <p style="color: #999999">Картинка</p>
                     <label class="file">
-                        <input type="file" id="file" aria-label="File browser example" asp-for="Image">
+                        <input type="file" id="file" aria-label="File browser example" name="formImage">
                         <span class="file-custom"></span>
                     </label>
                 </div>
 
-                @{
-                    if (ViewBag.Open)
-                    {
-                        <div class="wrap-select100 validate-input">
-                    <span class="focus-input100" data-placeholder="Направления подготовки"></span>
-                    <div class="col-md-offset-2 col-md-10">
-                        <div class="container-fluid">
-                            <div class="row">
-                                @{ int cnt = 0;
-                                    List<Priceless.Models.Helpers.AssignedMajorData> majors = ViewBag.Majors;
+                <input type="hidden" id="input" asp-for="Image" />
 
-                                    foreach (var major in majors)
-                                    {
-                                        if (cnt++ % 2 == 0)
-                                        {
-                        @:</div><div class="row">
-                        }
-                        @:<div class="col-md-6">
-                            <label class="control checkbox">
-                                <input type="checkbox"
-                                       name="selectedMajors"
-                                       value="@major.MajorId"
-                                       @(Html.Raw(major.Assigned ? "checked=\"checked\"" : "")) />
-                                <span class="control-indicator"></span>
-                                @major.Title 
-                            </label>
-                                                        @:</div>
-                                                    } }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                    }
-                }
+                @{ if (ViewBag.Open)
+                                {
+                                    <div class="wrap-select100 validate-input">
+                                        <span class="focus-input100" data-placeholder="Направления подготовки"></span>
+                                        <div class="col-md-offset-2 col-md-10">
+                                            <div class="container-fluid">
+                                                <div class="row">
+                                                    @{ int cnt = 0;
+                                                        List<Priceless.Models.Helpers.AssignedMajorData> majors = ViewBag.Majors;
+
+                                                        foreach (var major in majors)
+                                                        {
+                                                            if (cnt++ % 2 == 0)
+                                                            {
+                                    @:</div><div class="row">
+                                    }
+                @:<div class="col-md-6">
+                    <label class="control checkbox">
+                        <input type="checkbox"
+                               name="selectedMajors"
+                               value="@major.MajorId"
+                               @(Html.Raw(major.Assigned ? "checked=\"checked\"" : "")) />
+                        <span class="control-indicator"></span>
+                        @major.Title
+                    </label>
+                                    @:</div>
+                                } }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                } }
 
                 <div class="container-login100-form-btn">
                     <div class="wrap-login100-form-btn">
@@ -129,6 +127,8 @@
         </div>
     </div>
 </div>
+
+<script src="~/js/ajaxPost.js"></script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

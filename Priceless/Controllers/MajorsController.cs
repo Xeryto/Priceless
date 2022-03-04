@@ -18,10 +18,6 @@ namespace Priceless.Controllers
     public class MajorsController : Controller
     {
         private readonly PricelessContext _context;
-        private readonly MapperConfiguration config = new(cfg => cfg
-            .CreateMap<MajorPostModel, Major>().ForMember("Image", opt => opt.Ignore()));
-        private readonly MapperConfiguration inverse = new(cfg => cfg
-            .CreateMap<Major, MajorPostModel>().ForMember("Image", opt => opt.Ignore()));
 
         public MajorsController(PricelessContext context)
         {
@@ -63,24 +59,15 @@ namespace Priceless.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Image")] MajorPostModel majorPost)
+        public async Task<IActionResult> Create([Bind("Id,Title,Image")] Major major)
         {
-            var mapper = new Mapper(config);
-            var major = mapper.Map<MajorPostModel, Major>(majorPost);
             if (ModelState.IsValid)
             {
-                if (majorPost.Image != null)
-                {
-                    var stream = new MemoryStream();
-                    await majorPost.Image.CopyToAsync(stream);
-                    major.Image = stream.ToArray();
-                }
-
                 _context.Add(major);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(majorPost);
+            return View(major);
         }
 
         // GET: Majors/Edit/5
@@ -97,10 +84,7 @@ namespace Priceless.Controllers
                 return NotFound();
             }
 
-            var mapper = new Mapper(inverse);
-            var majorUpdate = mapper.Map<Major, MajorPostModel>(major);
-
-            return View(majorUpdate);
+            return View(major);
         }
 
         // POST: Majors/Edit/5
@@ -108,25 +92,19 @@ namespace Priceless.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Image")] MajorPostModel majorEdit)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Image")] Major major, bool deleteImage)
         {
-            if (id != majorEdit.Id)
+            if (id != major.Id)
             {
                 return NotFound();
             }
 
-            var mapper = new Mapper(config);
-            var major = mapper.Map<MajorPostModel, Major>(majorEdit);
-
             if (ModelState.IsValid)
             {
-                if (majorEdit.Image != null)
+                if (deleteImage)
                 {
-                    var stream = new MemoryStream();
-                    await majorEdit.Image.CopyToAsync(stream);
-                    major.Image = stream.ToArray();
+                    major.Image = null;
                 }
-
                 try
                 {
                     _context.Update(major);
