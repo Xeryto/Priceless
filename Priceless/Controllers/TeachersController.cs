@@ -18,8 +18,6 @@ namespace Priceless.Controllers
     public class TeachersController : Controller
     {
         private readonly PricelessContext _context;
-        private readonly MapperConfiguration config = new(cfg => cfg
-            .CreateMap<TeacherPostModel, Teacher>().ForMember("Image", opt => opt.Ignore()));
         private readonly string code = Hash("8PKFA2sf");
 
         public TeachersController(PricelessContext context)
@@ -100,22 +98,13 @@ namespace Priceless.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAdmin([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,Image")] TeacherPostModel teacherPost, int[] selectedMajors, string Code, bool Curator)
+        public async Task<IActionResult> CreateAdmin([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,Image")] Teacher teacher, int[] selectedMajors, string Code, bool Curator)
         {
-            var mapper = new Mapper(config);
-            var teacher = mapper.Map<TeacherPostModel, Teacher>(teacherPost);
             teacher.MajorAssignments = new List<MajorAssignment>();
             if (ModelState.IsValid)
             {
                 if (!_context.People.Any(p => p.Login == teacher.Login) && VerifyHashed(code, Code))
                 {
-                    if (teacherPost.Image != null)
-                    {
-                        var stream = new MemoryStream();
-                        await teacherPost.Image.CopyToAsync(stream);
-                        teacher.Image = stream.ToArray();
-                    }
-
                     teacher.Password = Hash(teacher.Password);
                     if (Curator)
                     {
@@ -132,11 +121,11 @@ namespace Priceless.Controllers
                 }
                 else
                 {
-                    return View(teacherPost);
+                    return View(teacher);
                 }
             }
             PopulateAssignedMajorData(teacher);
-            return View(teacherPost);
+            return View(teacher);
         }
 
         // GET: Teachers/Create
@@ -153,22 +142,13 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,FirstQA,SecondQA,ThirdQA,Image")] TeacherPostModel teacherPost, int[] selectedMajors)
+        public async Task<IActionResult> Create([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,FirstQA,SecondQA,ThirdQA,Image")] Teacher teacher, int[] selectedMajors)
         {
-            var mapper = new Mapper(config);
-            var teacher = mapper.Map<TeacherPostModel, Teacher>(teacherPost);
             teacher.MajorAssignments = new List<MajorAssignment>();
             if (ModelState.IsValid)
             {
                 if (! _context.People.Any(p => p.Login == teacher.Login))
                 {
-                    if (teacherPost.Image != null)
-                    {
-                        var stream = new MemoryStream();
-                        await teacherPost.Image.CopyToAsync(stream);
-                        teacher.Image = stream.ToArray();
-                    }
-
                     teacher.Password = Hash(teacher.Password);
                     teacher.Status = "In process";
                     AddTeacherMajors(selectedMajors, teacher);
@@ -178,67 +158,11 @@ namespace Priceless.Controllers
                 }
                 else
                 {
-                    return View(teacherPost);
+                    return View(teacher);
                 }
             }
             PopulateAssignedMajorData(teacher);
-            return View(teacherPost);
-        }
-
-        public async Task<IActionResult> EditImage(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var teacher = await _context.Teachers
-                .Include(i => i.MajorAssignments).ThenInclude(i => i.Major)
-                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (teacher == null)
-            {
-                return NotFound();
-            }
-            var teacherEdit = new ImageEditModel()
-            {
-                Id = teacher.Id
-            };
-            return View(teacherEdit);
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditImage(int id, [Bind("Image")] ImageEditModel teacherEdit)
-        {
-
-            if (ModelState.IsValid)
-            {
-                var teacher = await _context.Teachers
-                .Include(i => i.MajorAssignments).ThenInclude(i => i.Major)
-                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-                if (teacherEdit.Image != null)
-                {
-                    var stream = new MemoryStream();
-                    await teacherEdit.Image.CopyToAsync(stream);
-                    teacher.Image = stream.ToArray();
-                }
-
-                PersonCacheModel editor = WebCache.Get("LoggedIn" + id.ToString());
-                WebCache.Remove("LoggedIn"+id.ToString());
-                editor.Image = teacher.Image;
-                WebCache.Set("LoggedIn"+id.ToString(), editor, 60, true);
-                _context.Update(teacher);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Index));
-            }
-            return View(teacherEdit);
+            return View(teacher);
         }
 
         // GET: Teachers/Edit/5
@@ -320,7 +244,7 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, int[] selectedCourses, bool reconsider, string oldPas, string newPas)
+        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, int[] selectedCourses, bool reconsider, string oldPas, string newPas, bool deleteImage)
         {
             if (id == null)
             {
@@ -337,32 +261,40 @@ namespace Priceless.Controllers
             if (await TryUpdateModelAsync<Teacher>(
                 teacherToUpdate,
                 "",
-                i => i.Name, i => i.Password, i => i.Phone, i => i.VK, i => i.Grade, i => i.School))
+                i => i.Name, i => i.Password, i => i.Phone, i => i.VK, i => i.Grade, i => i.School, i => i.Image))
             {
+                if (deleteImage)
+                {
+                    teacherToUpdate.Image = null;
+                }
                 if (oldPas != null && VerifyHashed(teacherToUpdate.Password, oldPas))
                 {
                     teacherToUpdate.Password = Hash(newPas);
                 }
+                string ids;
+                HttpContext.Request.Cookies.TryGetValue("Id", out ids);
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
                 if (reconsider)
                 {
                     teacherToUpdate.Status = "In process";
-                    PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
-                    if (personCache != null)
-                    {
-                        personCache.Status = teacherToUpdate.Status;
-                        WebCache.Remove("LoggedIn" + teacherToUpdate.Id.ToString());
-                    }
-                    else
-                    {
-                        personCache = new PersonCacheModel()
-                        {
-                            Id = teacherToUpdate.Id,
-                            Role = "Teacher",
-                            Status = teacherToUpdate.Status
-                        };
-                    }
-                    WebCache.Set("LoggedIn" + teacherToUpdate.Id.ToString(), personCache, 60, true);
                 }
+                if (personCache != null)
+                {
+                    personCache.Status = teacherToUpdate.Status;
+                    personCache.Image = teacherToUpdate.Image;
+                    WebCache.Remove("LoggedIn" + teacherToUpdate.Id.ToString());
+                }
+                else
+                {
+                    personCache = new PersonCacheModel()
+                    {
+                        Id = teacherToUpdate.Id,
+                        Role = "Student",
+                        Status = teacherToUpdate.Status,
+                        Image = teacherToUpdate.Image
+                    };
+                }
+                WebCache.Set("LoggedIn" + teacherToUpdate.Id.ToString(), personCache, 60, true);
                 UpdateTeacherMajors(selectedMajors, teacherToUpdate);
                 UpdateTeacherCourses(selectedCourses, teacherToUpdate);
                 try
@@ -376,7 +308,7 @@ namespace Priceless.Controllers
                         "Try again, and if the problem persists, " +
                         "see your system administrator.");
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), "Home");
             }
             UpdateTeacherMajors(selectedMajors, teacherToUpdate);
             UpdateTeacherCourses(selectedCourses, teacherToUpdate);

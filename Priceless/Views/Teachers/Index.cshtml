@@ -99,7 +99,7 @@ else if (len - cnt == 1)
 <img src="~/img/default-user-icon.jpg" alt="courseImage" class="img-responsive" /> }
 else
 {
-<img src="data:image; base64,@Convert.ToBase64String(teacher.Image)" alt="courseImage" class="img-responsive" /> } }
+<img src="@teacher.Image" alt="courseImage" class="img-responsive" /> } }
         </div>
         <div class="wsk-cp-text">
             <div class="title-product">

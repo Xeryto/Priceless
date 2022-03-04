@@ -91,7 +91,7 @@
             @{
                 if (Model.Image != null)
                 {
-                    <img src="data:image; base64,@Convert.ToBase64String(Model.Image)" alt="courseImage" style="width: 100%" />
+                    <img src="@Model.Image" alt="courseImage" style="width: 100%" />
                 }
                 else
                 {
@@ -123,7 +123,7 @@
                                         }
                                         else
                                         {
-                                            <img src="data:image; base64,@Convert.ToBase64String(teacher.Image)" alt="user" class="rounded-circle" />
+                                            <img src="@teacher.Image" alt="user" class="rounded-circle" />
                                         }
                                     }
                                 </div>
@@ -153,7 +153,7 @@
                                         }
                                         else
                                         {
-                                            <img src="data:image; base64,@Convert.ToBase64String(student.Image)" alt="user" class="rounded-circle" />
+                                            <img src="@student.Image" alt="user" class="rounded-circle" />
                                         }
                                     }
                                 </div>

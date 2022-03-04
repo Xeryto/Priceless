@@ -25,6 +25,26 @@
                 </div>
 
                 <div class="wrap-select100 validate-input">
+                    <p style="color: #999999">Картинка</p>
+                    <label class="file">
+                        <input type="file" id="file" aria-label="File browser example" name="formImage">
+                        <span class="file-custom"></span>
+                    </label>
+                </div>
+
+                <input type="hidden" id="input" asp-for="Image" />
+
+                <div class="wrap-select100 validate-input">
+                    <label class="control checkbox">
+                        <input type="checkbox"
+                               name="deleteImage"
+                               value="True" />
+                        <span class="control-indicator"></span>
+                        Отметьте, если хотите удалить изображение
+                    </label>
+                </div>
+
+                <div class="wrap-select100 validate-input">
                     <span class="focus-input100" data-placeholder="Студенты"></span>
                     <div class="col-md-offset-2 col-md-10">
                         <div class="container-fluid">
@@ -39,14 +59,14 @@
                     @:</div><div class="row">
                     }
             @:<div class="col-md-12">
-                  <label class="control checkbox">
-                      <input type="checkbox"
-                             name="selectedStudents"
-                             value="@student.StudentId"
-                             @(Html.Raw(student.Assigned ? "checked=\"checked\"" : "")) />
-                      <span class="control-indicator"></span>
-                      @student.Name  @student.Login
-                  </label>
+                <label class="control checkbox">
+                    <input type="checkbox"
+                           name="selectedStudents"
+                           value="@student.StudentId"
+                           @(Html.Raw(student.Assigned ? "checked=\"checked\"" : "")) />
+                    <span class="control-indicator"></span>
+                    @student.Name  @student.Login
+                </label>
                             @:</div>
                         } }
                             </div>
@@ -69,14 +89,14 @@
                     @:</div><div class="row">
                     }
             @:<div class="col-md-6">
-                  <label class="control checkbox">
-                      <input type="checkbox"
-                             name="selectedTeachers"
-                             value="@teacher.TeacherId"
-                             @(Html.Raw(teacher.Assigned ? "checked=\"checked\"" : "")) />
-                      <span class="control-indicator"></span>
-                      @teacher.Name  @teacher.Login
-                  </label>
+                <label class="control checkbox">
+                    <input type="checkbox"
+                           name="selectedTeachers"
+                           value="@teacher.TeacherId"
+                           @(Html.Raw(teacher.Assigned ? "checked=\"checked\"" : "")) />
+                    <span class="control-indicator"></span>
+                    @teacher.Name  @teacher.Login
+                </label>
                             @:</div>
                         } }
                             </div>
@@ -99,6 +119,8 @@
         </div>
     </div>
 </div>
+
+<script src="~/js/ajaxPost.js"></script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
