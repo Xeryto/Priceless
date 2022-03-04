@@ -18,8 +18,6 @@ namespace Priceless.Controllers
     public class CoursesController : Controller
     {
         private readonly PricelessContext _context;
-        private readonly MapperConfiguration config = new(cfg => cfg
-            .CreateMap<CoursePostModel, Course>().ForMember("Image", opt => opt.Ignore()));
 
         public CoursesController(PricelessContext context)
         {
@@ -258,20 +256,12 @@ namespace Priceless.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Link,Image")] CoursePostModel coursePost, int[] selectedStudents, int[] selectedTeachers)
+        public async Task<IActionResult> Create([Bind("Id,Title,Link,Image")] Course course, int[] selectedStudents, int[] selectedTeachers)
         {
-            var mapper = new Mapper(config);
-            var course = mapper.Map<CoursePostModel, Course>(coursePost);
             course.CourseAssignments = new List<CourseAssignment>();
             course.Enrollments = new List<Enrollment>();
             if (ModelState.IsValid)
             {
-                if (coursePost.Image != null)
-                {
-                    var stream = new MemoryStream();
-                    await coursePost.Image.CopyToAsync(stream);
-                    course.Image = stream.ToArray();
-                }
                 AddCourseTeachers(selectedTeachers, course);
                 AddCourseStudents(selectedStudents, course);
                 _context.Add(course);
@@ -330,94 +320,6 @@ namespace Priceless.Controllers
                 }
             }
             ViewData["Teachers"] = viewModel;
-        }
-
-        public async Task<IActionResult> EditImage(int? id)
-        {
-            string ids;
-            PersonCacheModel personCache = null;
-            if (HttpContext.Request.Cookies.TryGetValue("Id", out ids))
-            {
-                personCache = WebCache.Get("LoggedIn" + ids);
-            }
-
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (course == null)
-            {
-                return NotFound();
-            }
-            var courseEdit = new ImageEditModel()
-            {
-                Id = (int)id
-            };
-            var teachers = new HashSet<int>
-                (_context.Teachers.Where(i => i.CourseAssignments.Where(c => c.CourseId == course.Id).Any()).Select(i => i.Id));
-            if (personCache != null)
-            {
-                var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
-                if (editor != null)
-                {
-                    if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
-                        return View(courseEdit);
-                    return StatusCode(StatusCodes.Status403Forbidden);
-                }
-                return StatusCode(StatusCodes.Status403Forbidden);
-            }
-            return StatusCode(StatusCodes.Status403Forbidden);
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditImage(int id, [Bind("Image")] ImageEditModel courseEdit)
-        {
-
-            if (ModelState.IsValid)
-            {
-                string ids;
-                PersonCacheModel personCache = null;
-                if (HttpContext.Request.Cookies.TryGetValue("Id", out ids))
-                {
-                    personCache = WebCache.Get("LoggedIn" + ids);
-                }
-
-                var course = await _context.Courses
-                    .FirstOrDefaultAsync(m => m.Id == id);
-
-                var teachers = new HashSet<int>
-                (_context.Teachers.Where(i => i.CourseAssignments.Where(c => c.CourseId == course.Id).Any()).Select(i => i.Id));
-                if (personCache != null)
-                {
-                    var editor = _context.Teachers.FirstOrDefault(i => i.Id == personCache.Id);
-                    if (editor != null)
-                    {
-                        if (teachers.Contains(editor.Id) || editor.Status == "Admin" || editor.Status == "Curator")
-                        {
-                            if (courseEdit.Image != null)
-                            {
-                                var stream = new MemoryStream();
-                                await courseEdit.Image.CopyToAsync(stream);
-                                course.Image = stream.ToArray();
-                            }
-
-                            _context.Update(course);
-                            await _context.SaveChangesAsync();
-
-                            return RedirectToAction(nameof(Index));
-                        }
-                        return StatusCode(StatusCodes.Status403Forbidden);
-                    }
-                    return StatusCode(StatusCodes.Status403Forbidden);
-                }
-                return StatusCode(StatusCodes.Status403Forbidden);
-            }
-            return View(courseEdit);
         }
 
         // GET: Courses/Edit/5
@@ -480,7 +382,7 @@ namespace Priceless.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, int[] selectedStudents, int[] selectedTeachers)
+        public async Task<IActionResult> Edit(int? id, int[] selectedStudents, int[] selectedTeachers, bool deleteImage)
         {
 
             if (id == null)
@@ -516,21 +418,17 @@ namespace Priceless.Controllers
                         if (await TryUpdateModelAsync<Course>(
                         courseToUpdate,
                         "",
-                        i => i.Title, i => i.Link))
+                        i => i.Title, i => i.Link, i => i.Image))
                         {
+                            if (deleteImage)
+                            {
+                                courseToUpdate.Image = null;
+                            }
                             UpdateCourseStudents(selectedStudents, courseToUpdate);
                             UpdateCourseTeachersAsync(selectedTeachers, courseToUpdate);
                             try
                             {
                                 _context.Entry(courseToUpdate).State = EntityState.Modified;
-                                /*foreach (var assignment in courseToUpdate.CourseAssignments)
-                                {
-                                    _context.Entry(assignment).State = EntityState.Modified;
-                                }
-                                foreach (var enrollment in courseToUpdate.Enrollments)
-                                {
-                                    _context.Entry(enrollment).State = EntityState.Modified;
-                                }*/
                                 await _context.SaveChangesAsync();
                             }
                             catch (DbUpdateException /* ex */)

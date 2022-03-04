@@ -1,6 +1,7 @@
 ﻿function editorFunc(onlyRead, jsonData) {
     if (!onlyRead) {
         let input = document.querySelector("#input");
+        let saveBtn = document.querySelector("#saveBtn");
     }
 
 
@@ -69,3 +70,9 @@
         data: jsonData
     });
 }
+
+saveBtn.addEventListener("click", function () {
+    editor.save().then((savedData) => {
+        input.value = JSON.stringify(savedData);
+    });
+});

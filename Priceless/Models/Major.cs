@@ -7,7 +7,7 @@ namespace Priceless.Models
     {
         public int Id { get; set; }
         public string Title { get; set; }
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
         public ICollection<Admission> Admissions { get; set; }
         public ICollection<MajorAssignment> MajorAssignments { get; set; }
     }
