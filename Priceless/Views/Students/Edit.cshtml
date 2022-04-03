@@ -13,7 +13,7 @@
     }
     if (personCache != null)
     {
-        if (personCache.Status == "Admin" || personCache.Status == "Curator" || personCache.Id == Model.Id)
+        if (personCache.Id == Model.Id)
         {
 <div class="limiter">
     <div class="container-login100">
@@ -43,7 +43,7 @@
 
                 <div class="wrap-input100 validate-input" data-validate="Введите имя">
                     <input class="input100 has-val" asp-for="Name" />
-                    <span class="focus-input100" data-placeholder="Имя"></span>
+                    <span class="focus-input100" data-placeholder="ФИО"></span>
                 </div>
 
                 <div class="wrap-input100 validate-input" data-validate="Введите класс обучения">
@@ -58,7 +58,7 @@
 
                 <div class="wrap-input100 validate-input" data-validate="Введите имя родителя">
                     <input class="input100 has-val" asp-for="ParentName">
-                    <span class="focus-input100" data-placeholder="Имя родителя"></span>
+                    <span class="focus-input100" data-placeholder="ФИО родителя"></span>
                 </div>
 
                 <div class="wrap-input100 validate-input" data-validate="Введите номер телефона родителя">
@@ -122,16 +122,7 @@
                     </div>
                 </div>
             </div>
-
-                                    <div class="wrap-select100 validate-input">
-                                        <label class="control checkbox">
-                                            <input type="checkbox"
-                                                   name="reconsider"
-                                                   value="true" />
-                                            <span class="control-indicator"></span>
-                                            Нажмите чтобы заявка была пересмотрена
-                                        </label>
-                                    </div> } }
+ } }
 
 
 

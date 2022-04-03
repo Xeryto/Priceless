@@ -10,7 +10,6 @@ namespace Priceless.Models
         public string Phone { get; set; }
         public int Grade { get; set; }
         public string Status { get; set; }
-        public string StatusComment { get; set; }
         public string FirstQA { get; set; }
         public string SecondQA { get; set; }
         public string ThirdQA { get; set; }

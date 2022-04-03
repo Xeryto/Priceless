@@ -1,59 +1,96 @@
-﻿@{
+﻿@using Priceless.Models.Helpers;
+@using System.Web.Helpers;
+
+@{
     ViewData["Title"] = "Manage";
-}
+    string ids;
+    PersonCacheModel personCache = null;
+    if (Context.Request.Cookies.TryGetValue("Id", out ids))
+    {
+        personCache = WebCache.Get("LoggedIn" + ids);
+    }
+    if (personCache != null)
+    {
+        if ((personCache.Status == "Admin" || personCache.Status == "Curator") && ids == ViewBag.userId.ToString())
+        {
+            <div class="limiter">
+                <div class="container-login100">
+                    <div class="wrap-login100">
+                        <form class="login100-form validate-form" asp-action="Manage" method="post">
+                            <span class="login100-form-title p-b-26">
+                                Добро пожаловать
+                            </span>
+                            <input type="hidden" name="userId" value="@ViewBag.userId" />
+                            <input type="hidden" name="id" value="@ViewBag.id" />
+                            <input type="hidden" name="student" value="@ViewBag.student.ToString()" />
 
-<div class="limiter">
-    <div class="container-login100">
-        <div class="wrap-login100">
-            <form class="login100-form validate-form" asp-action="Manage" method="post">
-                <span class="login100-form-title p-b-26">
-                    Добро пожаловать
-                </span>
-                <input type="hidden" name="userId" value="@ViewBag.userId" />
-                <input type="hidden" name="id" value="@ViewBag.id" />
+                            <div class="wrap-select100">
+                                <span class="focus-input100" data-placeholder="Комментарий"></span>
+                                <select asp-items="@ViewBag.Majors" name="majorId" style="margin-top: 50px;"></select>
+                            </div>
 
-                <div class="form-check form-check-inline">
-                    @{
-                        if (ViewBag.admit)
-                        {
-                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio1" value="true" checked>
-                        }
-                        else
-                        {
-                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio1" value="true">
-                        }
-                    }
-                    <label class="form-check-label" for="inlineRadio1">Принять</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    @{
-                        if (ViewBag.admit)
-                        {
-                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio2" value="false">
-                        }
-                        else
-                        {
-                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio2" value="false" checked>
-                        }
-                    }
+                            <div class="wrap-select100">
+                                <div class="form-check form-check-inline">
+                                    @{
+                                        if (ViewBag.admit)
+                                        {
+                                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio1" value="true" checked>
+                                        }
+                                        else
+                                        {
+                                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio1" value="true">
+                                        }
+                                    }
+                                    <label class="form-check-label" for="inlineRadio1">Принять</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    @{
+                                        if (ViewBag.admit)
+                                        {
+                                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio2" value="false">
+                                        }
+                                        else
+                                        {
+                                            <input class="form-check-input" type="radio" name="admit" id="inlineRadio2" value="false" checked>
+                                        }
+                                    }
 
-                    <label class="form-check-label" for="inlineRadio2">Отклонить</label>
-                </div>
+                                    <label class="form-check-label" for="inlineRadio2">Отклонить</label>
+                                </div>
+                            </div>
 
-                <div class="wrap-input100" data-validate="Введите комментарий">
-                    <input class="input100" name="comment" type="text" />
-                    <span class="focus-input100" data-placeholder="Комментарий"></span>
-                </div>
 
-                <div class="container-login100-form-btn">
-                    <div class="wrap-login100-form-btn">
-                        <div class="login100-form-bgbtn"></div>
-                        <button class="login100-form-btn" type="submit">
-                            Принять решение
-                        </button>
+                            <div class="wrap-input100" data-validate="Введите комментарий">
+                                <input class="input100" name="comment" type="text" />
+                                <span class="focus-input100" data-placeholder="Комментарий"></span>
+                            </div>
+
+                            <div class="container-login100-form-btn">
+                                <div class="wrap-login100-form-btn">
+                                    <div class="login100-form-bgbtn"></div>
+                                    <button class="login100-form-btn" type="submit">
+                                        Принять решение
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </form>
+            </div>
+        }
+        else
+        {
+            <div class="takeup">
+                <span class="text-danger">Только админы и кураторы могут просматривать эту страницу</span>
+            </div>
+
+        }
+    }
+    else
+    {
+        <div class="takeup">
+            <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
         </div>
-    </div>
-</div>
+
+    }
+}
