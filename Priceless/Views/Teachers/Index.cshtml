@@ -107,7 +107,7 @@ else
                 <h3>@teacher.Login</h3>
             </div>
             <div class="description-prod">
-                @{ if (teacher.MajorAssignments.Where(i => i.Status == "In process").Any())
+                @{ if (teacher.MajorAssignments.Where(i => i.Status == "In process").Any() || teacher.Status == "In process")
                                             {
                                                 <p>
                                                     <a asp-controller="Home" asp-action="Manage" asp-route-id="@teacher.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="false">Принять</a>
