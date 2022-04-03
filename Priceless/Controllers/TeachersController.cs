@@ -366,7 +366,14 @@ namespace Priceless.Controllers
                 {
                     if (!teacherMajors.Contains(Major.Id))
                     {
-                        teacherToUpdate.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToUpdate.Id, MajorId = Major.Id });
+                        if (teacherToUpdate.Status == "Admin" || teacherToUpdate.Status == "Curator")
+                        {
+                            teacherToUpdate.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToUpdate.Id, MajorId = Major.Id, Status = "Admitted" });
+                        }
+                        else
+                        {
+                            teacherToUpdate.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToUpdate.Id, MajorId = Major.Id, Status = "In process" });
+                        }
                     }
                 }
                 else
@@ -394,7 +401,14 @@ namespace Priceless.Controllers
             {
                 if (selectedMajorsHS.Contains(Major.Id))
                 {
-                    teacherToAdd.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToAdd.Id, MajorId = Major.Id });
+                    if (teacherToAdd.Status == "Admin" || teacherToAdd.Status == "Curator")
+                    {
+                        teacherToAdd.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToAdd.Id, MajorId = Major.Id, Status = "Admitted" });
+                    }
+                    else
+                    {
+                        teacherToAdd.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToAdd.Id, MajorId = Major.Id, Status = "In process" });
+                    }
                 }
             }
         }
