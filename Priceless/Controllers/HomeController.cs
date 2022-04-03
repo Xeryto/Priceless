@@ -24,6 +24,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Priceless.Controllers
 {
@@ -294,75 +295,171 @@ namespace Priceless.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Manage(int id, int userId, bool admit)
+        public async Task<IActionResult> Manage(int id, int userId, bool admit, bool student)
         {
+
             var admittingPerson = await _service.GetPersonById(userId);
-            var admittedPerson = await _service.GetPersonById(id);
-            if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
+            if (student)
             {
-                ViewData["id"] = id;
-                ViewData["userId"] = userId;
-                ViewData["admit"] = admit;
+                var admittedPerson = await _service.GetStudentById(id);
+                if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
+                {
+                    ViewData["id"] = id;
+                    ViewData["userId"] = userId;
+                    ViewData["admit"] = admit;
+                    ViewData["student"] = student;
+                    ViewData["Majors"] = new SelectList(admittedPerson.Admissions.Select(i => i.Major), "Id", "Title");
                 return View();
+                }
+            }
+            else
+            {
+                var admittedPerson = await _service.GetTeacherById(id);
+                if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
+                {
+                    ViewData["id"] = id;
+                    ViewData["userId"] = userId;
+                    ViewData["admit"] = admit;
+                    ViewData["student"] = student;
+                    ViewData["Majors"] = new SelectList(admittedPerson.MajorAssignments.Select(i => i.Major), "Id", "Title");
+                return View();
+                }
             }
             return StatusCode(StatusCodes.Status403Forbidden);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Manage(int id, int userId, string comment, bool admit)
+        public async Task<IActionResult> Manage(int id, int userId, string comment, bool admit, bool student, int majorId)
         {
             var admittingPerson = await _service.GetPersonById(userId);
-            var admittedPerson = await _service.GetPersonById(id);
-            if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
+            if (student)
             {
-                if (admit)
+                var admittedPerson = await _service.GetStudentById(id);
+                if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
                 {
-                    admittedPerson.Status = "Admitted";
-                }
-                else
-                {
-                    admittedPerson.Status = "Rejected";
-                }
-                admittedPerson.StatusComment = comment;
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
-                if (personCache != null)
-                {
-                    personCache.Status = admittedPerson.Status;
-                    WebCache.Remove("LoggedIn" + id.ToString());
-                }
-                else
-                {
-                    personCache = new PersonCacheModel()
+                    if (admit)
                     {
-                        Id = id,
-                        Role = "Teacher",
-                        Status = admittedPerson.Status
+                        admittedPerson.Admissions.FirstOrDefault(i => i.MajorId == majorId).Status = "Admitted";
+                        admittedPerson.Status = "Admitted";
+                    }
+                    else
+                    {
+                        if (!admittedPerson.Admissions.Where(i => i.Status != "Rejected").Any())
+                        {
+                            admittedPerson.Status = "Rejected";
+                        }
+                        admittedPerson.Admissions.FirstOrDefault(i => i.MajorId == majorId).Status = "Rejected";
+                    }
+                    admittedPerson.Admissions.FirstOrDefault(i => i.MajorId == majorId).StatusComment = comment;
+                    PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
+                    if (personCache != null)
+                    {
+                        personCache.Status = admittedPerson.Status;
+                        WebCache.Remove("LoggedIn" + id.ToString());
+                    }
+                    else
+                    {
+                        personCache = new PersonCacheModel()
+                        {
+                            Id = id,
+                            Role = "Teacher",
+                            Status = admittedPerson.Status
+                        };
+                    }
+                    WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
+                    await _service.UpdatePerson(admittedPerson);
+
+                    var emailMessage = new MimeMessage();
+
+                    emailMessage.From.Add(new MailboxAddress("Администрация сайта", "priceless.edu@mail.ru"));
+                    emailMessage.To.Add(new MailboxAddress("", admittedPerson.Login));
+                    emailMessage.Subject = "Заявка в Priceless";
+                    emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+                    {
+                        Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте,</a> зайдя в личный кабинет.</p>"
                     };
+
+                    using (var client = new SmtpClient())
+                    {
+                        await client.ConnectAsync("smtp.mail.ru", 465, true);
+                        await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
+                        await client.SendAsync(emailMessage);
+
+                        await client.DisconnectAsync(true);
+                    }
+
+                    return RedirectToAction("Index");
                 }
-                WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
-                await _service.UpdatePerson(admittedPerson);
-
-                var emailMessage = new MimeMessage();
-
-                emailMessage.From.Add(new MailboxAddress("Администрация сайта", "priceless.edu@mail.ru"));
-                emailMessage.To.Add(new MailboxAddress("", admittedPerson.Login));
-                emailMessage.Subject = "Заявка в Priceless";
-                emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+                ViewData["id"] = id;
+                ViewData["userId"] = userId;
+                ViewData["admit"] = admit;
+                ViewData["student"] = student;
+                ViewData["Majors"] = new SelectList(admittedPerson.Admissions.Select(i => i.Major), "Id", "Title");
+            }
+            else
+            {
+                var admittedPerson = await _service.GetTeacherById(id);
+                if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
                 {
-                    Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте,</a> зайдя в личный кабинет.</p>"
-                };
+                    if (admit)
+                    {
+                        admittedPerson.MajorAssignments.FirstOrDefault(i => i.MajorId == majorId).Status = "Admitted";
+                        admittedPerson.Status = "Admitted";
+                    }
+                    else
+                    {
+                        if (!admittedPerson.MajorAssignments.Where(i => i.Status != "Rejected").Any())
+                        {
+                            admittedPerson.Status = "Rejected";
+                        }
+                        admittedPerson.MajorAssignments.FirstOrDefault(i => i.MajorId == majorId).Status = "Rejected";
+                    }
+                    admittedPerson.MajorAssignments.FirstOrDefault(i => i.MajorId == majorId).StatusComment = comment;
+                    PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
+                    if (personCache != null)
+                    {
+                        personCache.Status = admittedPerson.Status;
+                        WebCache.Remove("LoggedIn" + id.ToString());
+                    }
+                    else
+                    {
+                        personCache = new PersonCacheModel()
+                        {
+                            Id = id,
+                            Role = "Teacher",
+                            Status = admittedPerson.Status
+                        };
+                    }
+                    WebCache.Set("LoggedIn" + id.ToString(), personCache, 60, true);
+                    await _service.UpdatePerson(admittedPerson);
 
-                using (var client = new SmtpClient())
-                {
-                    await client.ConnectAsync("smtp.mail.ru", 465, true);
-                    await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
-                    await client.SendAsync(emailMessage);
+                    var emailMessage = new MimeMessage();
 
-                    await client.DisconnectAsync(true);
+                    emailMessage.From.Add(new MailboxAddress("Администрация сайта", "priceless.edu@mail.ru"));
+                    emailMessage.To.Add(new MailboxAddress("", admittedPerson.Login));
+                    emailMessage.Subject = "Заявка в Priceless";
+                    emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+                    {
+                        Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте,</a> зайдя в личный кабинет.</p>"
+                    };
+
+                    using (var client = new SmtpClient())
+                    {
+                        await client.ConnectAsync("smtp.mail.ru", 465, true);
+                        await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
+                        await client.SendAsync(emailMessage);
+
+                        await client.DisconnectAsync(true);
+                    }
+
+                    return RedirectToAction("Index");
                 }
-
-                return RedirectToAction("Index");
+                ViewData["id"] = id;
+                ViewData["userId"] = userId;
+                ViewData["admit"] = admit;
+                ViewData["student"] = student;
+                ViewData["Majors"] = new SelectList(admittedPerson.MajorAssignments.Select(i => i.Major), "Id", "Title");
             }
             return StatusCode(StatusCodes.Status403Forbidden);
         }

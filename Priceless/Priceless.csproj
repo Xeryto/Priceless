@@ -73,5 +73,9 @@
     <Compile Remove="Migrations\20220227141116_TitlesUpdate.cs" />
     <Compile Remove="Migrations\20220301150528_InitialCreate.Designer.cs" />
     <Compile Remove="Migrations\20220301150528_InitialCreate.cs" />
+    <Compile Remove="Migrations\20220303170759_ImageUpdate.cs" />
+    <Compile Remove="Migrations\20220303170759_ImageUpdate.Designer.cs" />
+    <Compile Remove="Migrations\20220401201803_Setup.cs" />
+    <Compile Remove="Migrations\20220401201803_Setup.Designer.cs" />
   </ItemGroup>
 </Project>

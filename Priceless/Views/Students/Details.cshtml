@@ -5,7 +5,7 @@
 
 @{
     ViewData["Title"] = "Details";
-    var majors = Model.Admissions.Select(i => i.Major);
+    var admissions = Model.Admissions;
     bool flag = false;
     string ids;
     PersonCacheModel personCache = null;
@@ -27,16 +27,17 @@
                         if (Model.Status == "In process")
                         {
                             <h1>Статус заявки: В рассмотрении</h1>
+                            <p>Для подробностей, обратитесь к разделу "Направления" внизу страницы</p>
                         }
                         else if (Model.Status == "Admitted")
                         {
                             <h1>Статус заявки: Принята</h1>
-                            <p>@Model.StatusComment</p>
+                            <p>Для подробностей, обратитесь к разделу "Направления" внизу страницы</p>
                         }
                         else if (Model.Status == "Rejected")
                         {
                             <h1>Статус заявки: Отклонена</h1>
-                            <p>@Model.StatusComment</p>
+                            <p>Для подробностей, обратитесь к разделу "Направления" внизу страницы</p>
                         }
                         else if (Model.Status == "Inactive")
                         {
@@ -65,9 +66,9 @@
                 @{
                     if (flag && Model.Status == "In  process")
                     {
-                        <a asp-action="Admit" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id">Принять</a>
+                        <a asp-action="Admit" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="true">Принять</a>
                         <span>|</span>
-                        <a asp-action="Reject" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id">Отклонить</a>
+                        <a asp-action="Reject" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="true">Отклонить</a>
                     }
                 }
                 </div>
@@ -77,9 +78,15 @@
                 <div class="col-md-6">
                     <h2>Personal information</h2>
                 </div>
-                <div class="col-md-6">
-                    <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
-                </div>
+                @{
+                    if (personCache.Id == Model.Id)
+                    {
+                        <div class="col-md-6">
+                            <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
+                        </div>
+                    }
+                }
+                
             </div>
             <div class="row pad">
                     <div class="row">
@@ -102,7 +109,7 @@
                                     @Html.DisplayFor(model => model.Login)
                                 </dd>
                                 <dt class="col-sm-6">
-                                    Имя
+                                    ФИО
                                 </dt>
                                 <dd class="col-sm-6">
                                     @Html.DisplayFor(model => model.Name)
@@ -118,7 +125,7 @@
                         <div class="col-md-6" style="text-align: center;">
                             <dl class="row">
                                 <dt class="col-sm-6">
-                                    Имя родителя
+                                    ФИО родителя
                                 </dt>
                                 <dd class="col-sm-6">
                                     @Html.DisplayFor(model => model.ParentName)
@@ -172,7 +179,7 @@
     <div class="row">
         @{ int cnt2 = 0;
 
-                        foreach (var major in majors)
+                        foreach (var admission in admissions)
                         {
                             cnt2++;
                             if (cnt2 % 3 == 1)
@@ -184,21 +191,46 @@
 <div class="col-md-4">
     <div class="wsk-cp-product">
         <div class="wsk-cp-img">
-            @{ if (major.Image == null)
+            @{ if (admission.Major.Image == null)
                 {
 <img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
 else
 {
-<img src="@major.Image" alt="courseImage" class="img-responsive" /> } }
+<img src="@admission.Major.Image" alt="courseImage" class="img-responsive" /> } }
         </div>
         <div class="wsk-cp-text">
             <div class="title-product">
-                <h3>@major.Title</h3>
+                <h3>@admission.Major.Title</h3>
             </div>
             <div class="description-prod">
-                <p>
-                    <a asp-controller="Majors" asp-action="Details" asp-route-id="@major.Id">Детали</a>
-                </p>
+                @{
+                    if (admission.Status == "In process")
+                        {
+                            <h5>Статус заявки: В рассмотрении</h5>
+                        }
+                        else if (admission.Status == "Admitted")
+                        {
+                            <h5>Статус заявки: Принята</h5>
+                            <p>@admission.StatusComment</p>
+                        }
+                        else if (admission.Status == "Rejected")
+                        {
+                            <h5>Статус заявки: Отклонена</h5>
+                            <p>@admission.StatusComment</p>
+                        }
+                }
+                @{
+                    if (flag && Model.Status == "In  process")
+                    {
+                                <p>
+                                    <a asp-action="Admit" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="true">Принять</a>
+                                    <span>|</span>
+                                    <a asp-action="Reject" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="true">Отклонить</a>
+                                </p>
+                        
+                    }
+                }
+                <a asp-controller="Majors" asp-action="Details" asp-route-id="@admission.Major.Id" class="stretched-link"></a>
             </div>
         </div>
     </div>
@@ -243,9 +275,7 @@ else
                 <h3>@course.Title</h3>
             </div>
             <div class="description-prod">
-                <p>
-                    <a asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id">Детали</a>
-                </p>
+                <a asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id" class="stretched-link"></a>
             </div>
         </div>
     </div>
