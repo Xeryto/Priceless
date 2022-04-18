@@ -7,5 +7,7 @@ namespace Priceless.Models
         public int MajorId { get; set; }
         public Student Student { get; set; }
         public Major Major { get; set; }
+        public string Status { get; set; }
+        public string StatusComment { get; set; }
     }
 }

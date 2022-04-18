@@ -35,6 +35,7 @@ namespace Priceless
 
             services.AddDbContext<PricelessContext>(options =>
                 //options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection"))
+                //options.UseSqlServer(Configuration.GetConnectionString("DevConnection"))
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
                 );
 

@@ -38,7 +38,7 @@ namespace Priceless.Controllers
                 selectedMajors.Add(major.Id, false);
             }
             ViewData["SelectedMajors"] = selectedMajors;
-            return View(await _context.Teachers.Where(i => i.Status == "In process").ToListAsync());
+            return View(await _context.Teachers.Include(i => i.MajorAssignments).ThenInclude(i => i.Major).AsNoTracking().Where(i => i.MajorAssignments.Where(i => i.Status == "In process").Any() || i.Status == "In process").ToListAsync());
         }
 
         [HttpPost]
@@ -57,7 +57,7 @@ namespace Priceless.Controllers
             var command = _context.Teachers.Include(i => i.MajorAssignments).ThenInclude(i => i.Major).AsNoTracking();
             if (admitted)
             {
-                command = command.Where(i => i.Status == "In process");
+                command = command.Where(i => i.MajorAssignments.Where(i => i.Status == "In process").Any() || i.Status == "In process");
             }
             foreach (var majorId in selectedMajors)
             {
@@ -244,7 +244,7 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, int[] selectedCourses, bool reconsider, string oldPas, string newPas, bool deleteImage)
+        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, int[] selectedCourses, string oldPas, string newPas, bool deleteImage)
         {
             if (id == null)
             {
@@ -271,13 +271,14 @@ namespace Priceless.Controllers
                 {
                     teacherToUpdate.Password = Hash(newPas);
                 }
-                string ids;
-                HttpContext.Request.Cookies.TryGetValue("Id", out ids);
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
-                if (reconsider)
+                UpdateTeacherMajors(selectedMajors, teacherToUpdate);
+                if (teacherToUpdate.MajorAssignments.Where(i => i.Status == "In process").Any() && teacherToUpdate.Status != "Admitted")
                 {
                     teacherToUpdate.Status = "In process";
                 }
+                string ids;
+                HttpContext.Request.Cookies.TryGetValue("Id", out ids);
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
                 if (personCache != null)
                 {
                     personCache.Status = teacherToUpdate.Status;
@@ -295,7 +296,6 @@ namespace Priceless.Controllers
                     };
                 }
                 WebCache.Set("LoggedIn" + teacherToUpdate.Id.ToString(), personCache, 60, true);
-                UpdateTeacherMajors(selectedMajors, teacherToUpdate);
                 UpdateTeacherCourses(selectedCourses, teacherToUpdate);
                 try
                 {
@@ -366,7 +366,14 @@ namespace Priceless.Controllers
                 {
                     if (!teacherMajors.Contains(Major.Id))
                     {
-                        teacherToUpdate.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToUpdate.Id, MajorId = Major.Id });
+                        if (teacherToUpdate.Status == "Admin" || teacherToUpdate.Status == "Curator")
+                        {
+                            teacherToUpdate.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToUpdate.Id, MajorId = Major.Id, Status = "Admitted" });
+                        }
+                        else
+                        {
+                            teacherToUpdate.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToUpdate.Id, MajorId = Major.Id, Status = "In process" });
+                        }
                     }
                 }
                 else
@@ -394,7 +401,14 @@ namespace Priceless.Controllers
             {
                 if (selectedMajorsHS.Contains(Major.Id))
                 {
-                    teacherToAdd.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToAdd.Id, MajorId = Major.Id });
+                    if (teacherToAdd.Status == "Admin" || teacherToAdd.Status == "Curator")
+                    {
+                        teacherToAdd.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToAdd.Id, MajorId = Major.Id, Status = "Admitted" });
+                    }
+                    else
+                    {
+                        teacherToAdd.MajorAssignments.Add(new MajorAssignment { TeacherId = teacherToAdd.Id, MajorId = Major.Id, Status = "In process" });
+                    }
                 }
             }
         }

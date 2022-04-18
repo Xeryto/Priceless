@@ -36,7 +36,7 @@ namespace Priceless.Controllers
                 selectedMajors.Add(major.Id, false);
             }
             ViewData["SelectedMajors"] = selectedMajors;
-            return View(await _context.Students.Where(i => i.Status == "In process").ToListAsync());
+            return View(await _context.Students.Include(i => i.Admissions).ThenInclude(i => i.Major).AsNoTracking().Where(i => i.Admissions.Where(i => i.Status == "In process").Any() || i.Status == "In process").ToListAsync());
         }
 
         [HttpPost]
@@ -55,7 +55,7 @@ namespace Priceless.Controllers
             var command = _context.Students.Include(i => i.Admissions).ThenInclude(i => i.Major).AsNoTracking();
             if (admitted)
             {
-                command = command.Where(i => i.Status == "In process");
+                command = command.Where(i => i.Admissions.Where(i => i.Status == "In process").Any() || i.Status == "In process");
             }
             foreach (var majorId in selectedMajors)
             {
@@ -189,7 +189,7 @@ namespace Priceless.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, bool reconsider, string oldPas, string newPas, bool deleteImage)
+        public async Task<IActionResult> Edit(int? id, int[] selectedMajors, string oldPas, string newPas, bool deleteImage)
         {
             var studentToUpdate = await _context.Students
                 .Include(i => i.Admissions)
@@ -211,13 +211,14 @@ namespace Priceless.Controllers
                 {
                     studentToUpdate.Password = Hash(newPas);
                 }
-                string ids;
-                HttpContext.Request.Cookies.TryGetValue("Id", out ids);
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + studentToUpdate.Id.ToString());
-                if (reconsider)
+                UpdateStudentMajors(selectedMajors, studentToUpdate);
+                if (studentToUpdate.Admissions.Where(i => i.Status == "In process").Any() && studentToUpdate.Status != "Admitted")
                 {
                     studentToUpdate.Status = "In process";
                 }
+                string ids;
+                HttpContext.Request.Cookies.TryGetValue("Id", out ids);
+                PersonCacheModel personCache = WebCache.Get("LoggedIn" + studentToUpdate.Id.ToString());
                 if (personCache != null)
                 {
                     personCache.Status = studentToUpdate.Status;
@@ -235,7 +236,6 @@ namespace Priceless.Controllers
                     };
                 }
                 WebCache.Set("LoggedIn" + studentToUpdate.Id.ToString(), personCache, 60, true);
-                UpdateStudentMajors(selectedMajors, studentToUpdate);
                 try
                 {
                     await _context.SaveChangesAsync();
@@ -273,7 +273,7 @@ namespace Priceless.Controllers
                 {
                     if (!studentCourses.Contains(major.Id))
                     {
-                        studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = major.Id });
+                        studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = major.Id, Status = "In process" });
                     }
                 }
                 else
@@ -299,7 +299,7 @@ namespace Priceless.Controllers
             {
                 if (selectedMajorsHS.Contains(major.Id))
                 {
-                    studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = major.Id });
+                    studentToUpdate.Admissions.Add(new Admission { StudentId = studentToUpdate.Id, MajorId = major.Id, Status = "In process" });
                 }
             }
         }

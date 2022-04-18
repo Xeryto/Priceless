@@ -108,23 +108,19 @@ else
             </div>
             <div class="description-prod">
                 @{
-                    if (student.Status == "In process")
+                    if (student.Admissions.Where(i => i.Status == "In process").Any() || student.Status == "In process")
                 {
                                 <p>
-                                    <a asp-controller="Home" asp-action="Manage" asp-route-id="@student.Id" asp-route-userId="@personCache.Id" asp-route-admit="true">Принять</a>
+                                    <a asp-controller="Home" asp-action="Manage" asp-route-id="@student.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="true">Принять</a>
                                     |
-                                    <a asp-controller="Home" asp-action="Manage" asp-route-id="@student.Id" asp-route-userId="@personCache.Id" asp-route-admit="false">Отклонить</a>
+                                    <a asp-controller="Home" asp-action="Manage" asp-route-id="@student.Id" asp-route-userId="@personCache.Id" asp-route-admit="false" asp-route-student="true">Отклонить</a>
                                 </p>
                 }
                 }
                 <p>
                     <a asp-action="Details" asp-route-id="@student.Id">Детали</a>
-                    <span>|</span>
-                    <a asp-action="Edit" asp-route-id="@student.Id">Изменить</a>
-                    <span>|</span>
-                    <a asp-action="Delete" asp-route-id="@student.Id">Удалить</a>
-
                 </p>
+                
             </div>
         </div>
     </div>

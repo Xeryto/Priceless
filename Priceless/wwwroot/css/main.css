@@ -39,20 +39,20 @@
 
 body, html {
 	height: 100%;
-	font-family: Poppins-Regular, sans-serif;
+	font-family: "Times New Roman", Times, serif;
 }
 
 /*---------------------------------------------*/
 a {
-	font-family: Poppins-Regular;
+	font-family: "Times New Roman", Times, serif;
 	font-size: 14px;
 	line-height: 1.7;
 	color: #666666;
 	margin: 0px;
 	transition: all 0.4s;
 	-webkit-transition: all 0.4s;
-  -o-transition: all 0.4s;
-  -moz-transition: all 0.4s;
+	-o-transition: all 0.4s;
+	-moz-transition: all 0.4s;
 }
 
 a:focus {
@@ -74,7 +74,7 @@ h1,h2,h3,h4,h5,h6 class="h6" {
 }
 
 p {
-	font-family: Poppins-Regular;
+	font-family: "Times New Roman", Times, serif;
 	font-size: 14px;
 	line-height: 1.7;
 	color: #666666;
@@ -515,53 +515,49 @@ iframe {
 }
 
 .alert-validate::before {
-  content: attr(data-validate);
-  position: absolute;
-  max-width: 70%;
-  background-color: #fff;
-  border: 1px solid #c80000;
-  border-radius: 2px;
-  padding: 4px 25px 4px 10px;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  -moz-transform: translateY(-50%);
-  -ms-transform: translateY(-50%);
-  -o-transform: translateY(-50%);
-  transform: translateY(-50%);
-  right: 0px;
-  pointer-events: none;
-
-  font-family: Poppins-Regular;
-  color: #c80000;
-  font-size: 13px;
-  line-height: 1.4;
-  text-align: left;
-
-  visibility: hidden;
-  opacity: 0;
-
-  -webkit-transition: opacity 0.4s;
-  -o-transition: opacity 0.4s;
-  -moz-transition: opacity 0.4s;
-  transition: opacity 0.4s;
+	content: attr(data-validate);
+	position: absolute;
+	max-width: 70%;
+	background-color: #fff;
+	border: 1px solid #c80000;
+	border-radius: 2px;
+	padding: 4px 25px 4px 10px;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	-moz-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	-o-transform: translateY(-50%);
+	transform: translateY(-50%);
+	right: 0px;
+	pointer-events: none;
+	font-family: "Times New Roman", Times, serif;
+	color: #c80000;
+	font-size: 13px;
+	line-height: 1.4;
+	text-align: left;
+	visibility: hidden;
+	opacity: 0;
+	-webkit-transition: opacity 0.4s;
+	-o-transition: opacity 0.4s;
+	-moz-transition: opacity 0.4s;
+	transition: opacity 0.4s;
 }
 
 .alert-validate::after {
-  content: "\f06a";
-  font-family: FontAwesome;
-  font-size: 16px;
-  color: #c80000;
-
-  display: block;
-  position: absolute;
-  background-color: #fff;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  -moz-transform: translateY(-50%);
-  -ms-transform: translateY(-50%);
-  -o-transform: translateY(-50%);
-  transform: translateY(-50%);
-  right: 5px;
+	content: "\f06a";
+	font-family: "Times New Roman", Times, serif;
+	font-size: 16px;
+	color: #c80000;
+	display: block;
+	position: absolute;
+	background-color: #fff;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	-moz-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	-o-transform: translateY(-50%);
+	transform: translateY(-50%);
+	right: 5px;
 }
 
 .alert-validate:hover:before {

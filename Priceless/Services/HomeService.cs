@@ -59,6 +59,16 @@ namespace Priceless.Services
             return await _context.People.FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<Teacher> GetTeacherById(int id)
+        {
+            return await _context.Teachers.Include(i => i.CourseAssignments).ThenInclude(i => i.Course).Include(i => i.MajorAssignments).ThenInclude(i => i.Major).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<Student> GetStudentById(int id)
+        {
+            return await _context.Students.Include(i => i.Admissions).ThenInclude(i => i.Major).Include(i => i.Enrollments).ThenInclude(i => i.Course).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<Person> GetById(string id)
         {
             var people = await _context.People.ToListAsync();
