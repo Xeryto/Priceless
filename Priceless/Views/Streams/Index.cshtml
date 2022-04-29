@@ -4,6 +4,7 @@
 @model IEnumerable<Priceless.Models.Stream>
 
 @{ ViewData["Title"] = "Index";
+    bool flag = false;
     string ids;
     PersonCacheModel personCache = null;
     if (Context.Request.Cookies.TryGetValue("Id", out ids))
@@ -14,9 +15,12 @@
     {
         if (personCache.Status == "Admin" || personCache.Status == "Curator")
         {
+            flag = true;
 <h1 style="text-align: center;">
     <a asp-action="Create">Добавить новый</a>
 </h1>
+            }
+        } }
 <div class="container">
     <div class="row">
         @{ int cnt = 0;
@@ -58,10 +62,15 @@ else if (len - cnt == 1)
                 </p>
                 <p>
                     <a asp-action="Details" asp-route-id="@stream.Id">Детали</a>
-                    <span>|</span>
-                    <a asp-action="Edit" asp-route-id="@stream.Id">Изменить</a>
-                    <span>|</span>
-                    <a asp-action="Delete" asp-route-id="@stream.Id">Удалить</a>
+                    @{
+                        if (flag)
+                        {
+                            <span>|</span>
+                            <a asp-action="Edit" asp-route-id="@stream.Id">Изменить</a>
+                            <span>|</span>
+                            <a asp-action="Delete" asp-route-id="@stream.Id">Удалить</a>
+                        }
+                    }
                 </p>
             </div>
         </div>
@@ -69,15 +78,4 @@ else if (len - cnt == 1)
 </div> } }
     </div>
 
-</div> }
-                else
-                {
-<div class="takeup">
-    <span class="text-danger">Только админы и кураторы могут просматривать потоки</span>
-</div> }
-}
-else
-{
-<div class="takeup">
-    <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
-</div> } }
+</div>

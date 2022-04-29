@@ -49,9 +49,9 @@
                 @{
                     if (flag && Model.Status == "In process")
                     {
-                        <a asp-action="Принять" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="false">Принять</a>
+                        <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="false">Принять</a>
                         <span>|</span>
-                        <a asp-action="Reject" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="false">Отклонить</a>
+                        <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="false" asp-route-student="false">Отклонить</a>
                     }
                 }
                 </div>
@@ -110,7 +110,9 @@
                                     Аккаунт VK
                                 </dt>
                                 <dd class="col-sm-6">
-                                    @{ if (Model.VK.Contains("https"))
+                                    @{if (Model.VK != null)
+                    {
+                                    if (Model.VK.Contains("https"))
                                         {
                                 <a href="@Model.VK">@Html.DisplayFor(model => model.VK)</a> }
                                                     else if (Model.VK.Contains("vk.com"))
@@ -120,6 +122,8 @@
                                                     {
                                                         @Html.DisplayFor(model => model.VK)
                                                     }
+                    }
+                                        
                                     }
                                 </dd>
                                 <dt class="col-sm-6">
@@ -270,7 +274,7 @@ else
 
 </div>
             </div>
-            if (personCache.Status == "Admin" || personCache.Status == "Curator")
+            if ((personCache.Status == "Admin" || personCache.Status == "Curator") && personCache.Id == Model.Id)
                     {
                         <div class="row pad">
                             <h2>Управление</h2>

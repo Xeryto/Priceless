@@ -4,6 +4,7 @@
 @model Priceless.Models.Stream
 
 @{ ViewData["Title"] = "Details";
+    bool flag = false;
     string ids;
     PersonCacheModel personCache = null;
     if (Context.Request.Cookies.TryGetValue("Id", out ids))
@@ -14,6 +15,8 @@
     {
         if (personCache.Status == "Admin" || personCache.Status == "Curator")
         {
+            flag = true;
+        } } }
 <div class="container">
     <div class="row">
         <div class="col-md-2"></div>
@@ -37,7 +40,13 @@
                             Конец потока: @Model.End
                         </p>
                         <div>
-                            <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a> |
+                            @{
+                                if (flag)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
+                <span>|</span>
+            }
+                            }
                             <a asp-action="Index">Вернуться к списку</a>
                         </div>
                     </div>
@@ -45,15 +54,4 @@
             </div>
         </div>
     </div>
-</div> }
-else
-{
-<div class="takeup">
-    <span class="text-danger">Только админы и кураторы могут просматривать потоки</span>
-</div> }
-}
-else
-{
-<div class="takeup">
-    <span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
-</div> } }
+</div>
