@@ -242,7 +242,7 @@ namespace Priceless.Controllers
                 var cookieOptions = new Microsoft.AspNetCore.Http.CookieOptions()
                 {
                     Path = "/",
-                    HttpOnly = false,
+                    HttpOnly = true,
                     IsEssential = true, //<- there
                     Secure = true,
                     Expires = DateTime.Now.AddMonths(1),

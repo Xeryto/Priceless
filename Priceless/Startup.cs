@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +44,24 @@ namespace Priceless
 
             services.AddTransient(typeof(HomeService));
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews();//.AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
+
+            //services.AddPortableObjectLocalization();
+
+            //services.Configure<RequestLocalizationOptions>(options =>
+            //{
+              //  var supportedCultures = new List<CultureInfo>
+                //{
+                  //  new CultureInfo("en-US"),
+                    //new CultureInfo("en"),
+                    //new CultureInfo("ru-RU"),
+                    //new CultureInfo("ru")
+                //};
+
+                //options.DefaultRequestCulture = new RequestCulture("ru-RU");
+                //options.SupportedCultures = supportedCultures;
+                //options.SupportedUICultures = supportedCultures;
+            //});
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,6 +83,8 @@ namespace Priceless
             app.UseCookiePolicy();
 
             app.UseRouting();
+
+            //app.UseRequestLocalization();
 
             app.UseAuthorization();
 
