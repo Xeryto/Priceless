@@ -25,6 +25,7 @@
     <None Remove="MailKit" />
     <None Remove="Google.Apis.Auth" />
     <None Remove="Migrations\" />
+    <None Remove="OrchardCore.Localization.Core" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.13" />
@@ -51,6 +52,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
     <PackageReference Include="MailKit" Version="3.1.1" />
     <PackageReference Include="Google.Apis.Auth" Version="1.55.0" />
+    <PackageReference Include="OrchardCore.Localization.Core" Version="1.2.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />

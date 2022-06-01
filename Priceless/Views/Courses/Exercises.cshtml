@@ -114,16 +114,16 @@
                                 @:</div><div class="row">
                                 }
 
-                                <div class="col-md-3">
+                                <div class="col-md-3 tiny-ph">
                                     @{
                                         if (teacher.Image == null)
                                         {
-                                            <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" />
+                                            <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" data-toggle="tooltip" title="@teacher.Name"/>
 
                                         }
                                         else
                                         {
-                                            <img src="@teacher.Image" alt="user" class="rounded-circle" />
+                                            <img src="@teacher.Image" alt="user" class="rounded-circle" data-toggle="tooltip" title="@teacher.Name"/>
                                         }
                                     }
                                 </div>
@@ -144,16 +144,16 @@
                                 @:</div><div class="row">
                                 }
 
-                                <div class="col-md-3">
+                                <div class="col-md-3 tiny-ph">
                                     @{
                                         if (student.Image == null)
                                         {
-                                            <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" />
+                                            <img src="~/img/default-user-icon.jpg" alt="user" class="rounded-circle" data-toggle="tooltip" title="@student.Name"/>
 
                                         }
                                         else
                                         {
-                                            <img src="@student.Image" alt="user" class="rounded-circle" />
+                                            <img src="@student.Image" alt="user" class="rounded-circle" data-toggle="tooltip" title="@student.Name"/>
                                         }
                                     }
                                 </div>

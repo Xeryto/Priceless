@@ -14,7 +14,7 @@
  }
 
 @{
-    if (personCache.Status == "Admin" || personCache.Status == "Curator")
+    if (personCache.Status == "Admin" || personCache.Status == "Curator" || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
     {
         <h1 style="text-align: center;">
             <a asp-action="Create">Создать новый</a>
