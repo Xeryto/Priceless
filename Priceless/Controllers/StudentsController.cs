@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -53,14 +52,22 @@ namespace Priceless.Controllers
             ViewData["SelectedMajors"] = selectedMajorsDict;
             ViewData["Process"] = admitted;
             var command = _context.Students.Include(i => i.Admissions).ThenInclude(i => i.Major).AsNoTracking();
-            if (admitted)
+            if (selectedMajors.Length != 0)
+            {
+                if (admitted)
+                {
+                    command = command.Where(i => i.Admissions.Where(a => selectedMajors.Contains(a.MajorId) && a.Status == "In process").Any());
+                }
+                else
+                {
+                    command = command.Where(i => i.Admissions.Where(a => selectedMajors.Contains(a.MajorId)).Any());
+                }
+            }
+            else if (admitted)
             {
                 command = command.Where(i => i.Admissions.Where(i => i.Status == "In process").Any() || i.Status == "In process");
             }
-            foreach (var majorId in selectedMajors)
-            {
-                command = command.Where(i => i.Admissions.Where(a => a.MajorId == majorId).Any());
-            }
+            
             return View(await command.ToListAsync());
         }
 

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Helpers;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -51,7 +50,8 @@ namespace Priceless.Controllers
                 PersonCacheModel personCache = WebCache.Get("LoggedIn" + ids);
                 if (personCache != null)
                 {
-                    if (personCache.Status == "Admin" || personCache.Status == "Curator" || teachers.Contains(personCache.Id) || students.Contains(personCache.Id))
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator" || teachers.Contains(personCache.Id)
+                        || students.Contains(personCache.Id))
                     {
                         return View(course);
                     }

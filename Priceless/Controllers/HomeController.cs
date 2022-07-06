@@ -295,21 +295,31 @@ namespace Priceless.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Manage(int id, int userId, bool admit, bool student)
+        public async Task<IActionResult> Manage(int id, int userId, bool admit, bool student, int? majorId = null, bool changeDecision = false)
         {
 
             var admittingPerson = await _service.GetPersonById(userId);
+            ViewData["id"] = id;
+            ViewData["userId"] = userId;
+            ViewData["admit"] = admit;
+            ViewData["student"] = student;
+            ViewData["majorId"] = majorId;
             if (student)
             {
                 var admittedPerson = await _service.GetStudentById(id);
                 if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
                 {
-                    ViewData["id"] = id;
-                    ViewData["userId"] = userId;
-                    ViewData["admit"] = admit;
-                    ViewData["student"] = student;
-                    ViewData["Majors"] = new SelectList(admittedPerson.Admissions.Select(i => i.Major), "Id", "Title");
-                return View();
+                    IEnumerable<Admission> majors = admittedPerson.Admissions;
+                    if (majorId != null)
+                    {
+                        majors = admittedPerson.Admissions.Where(i => i.MajorId == majorId).Concat(admittedPerson.Admissions.Where(i => i.MajorId != majorId));
+                    }
+                    if (!changeDecision)
+                    {
+                        majors = majors.Where(i => i.Status == "In process");
+                    }
+                    ViewData["Majors"] = new SelectList(majors.Select(i => i.Major), "Id", "Title");
+                    return View();
                 }
             }
             else
@@ -317,12 +327,17 @@ namespace Priceless.Controllers
                 var admittedPerson = await _service.GetTeacherById(id);
                 if (admittingPerson != null && admittedPerson != null && (admittingPerson.Status == "Admin" || admittingPerson.Status == "Curator"))
                 {
-                    ViewData["id"] = id;
-                    ViewData["userId"] = userId;
-                    ViewData["admit"] = admit;
-                    ViewData["student"] = student;
-                    ViewData["Majors"] = new SelectList(admittedPerson.MajorAssignments.Select(i => i.Major), "Id", "Title");
-                return View();
+                    IEnumerable<MajorAssignment> majors = admittedPerson.MajorAssignments;
+                    if (majorId != null)
+                    {
+                        majors = admittedPerson.MajorAssignments.Where(i => i.MajorId == majorId).Concat(admittedPerson.MajorAssignments.Where(i => i.MajorId != majorId));
+                    }
+                    if (!changeDecision)
+                    {
+                        majors = majors.Where(i => i.Status == "In process");
+                    }
+                    ViewData["Majors"] = new SelectList(majors.Select(i => i.Major), "Id", "Title");
+                    return View();
                 }
             }
             return StatusCode(StatusCodes.Status403Forbidden);
@@ -345,11 +360,11 @@ namespace Priceless.Controllers
                     }
                     else
                     {
+                        admittedPerson.Admissions.FirstOrDefault(i => i.MajorId == majorId).Status = "Rejected";
                         if (!admittedPerson.Admissions.Where(i => i.Status != "Rejected").Any())
                         {
                             admittedPerson.Status = "Rejected";
                         }
-                        admittedPerson.Admissions.FirstOrDefault(i => i.MajorId == majorId).Status = "Rejected";
                     }
                     admittedPerson.Admissions.FirstOrDefault(i => i.MajorId == majorId).StatusComment = comment;
                     PersonCacheModel personCache = WebCache.Get("LoggedIn" + id.ToString());
