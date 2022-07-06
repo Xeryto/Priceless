@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Priceless.Models.Helpers;
 using Priceless.Models;
 using System.Security.Cryptography;
-using AutoMapper;
 using System.IO;
 using System.Web.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -55,13 +54,20 @@ namespace Priceless.Controllers
             ViewData["SelectedMajors"] = selectedMajorsDict;
             ViewData["Process"] = admitted;
             var command = _context.Teachers.Include(i => i.MajorAssignments).ThenInclude(i => i.Major).AsNoTracking();
-            if (admitted)
+            if (selectedMajors.Length != 0)
+            {
+                if (admitted)
+                {
+                    command = command.Where(i => i.MajorAssignments.Where(a => selectedMajors.Contains(a.MajorId) && a.Status == "In process").Any());
+                }
+                else
+                {
+                    command = command.Where(i => i.MajorAssignments.Where(a => selectedMajors.Contains(a.MajorId)).Any());
+                }
+            }
+            else if (admitted)
             {
                 command = command.Where(i => i.MajorAssignments.Where(i => i.Status == "In process").Any() || i.Status == "In process");
-            }
-            foreach (var majorId in selectedMajors)
-            {
-                command = command.Where(i => i.MajorAssignments.Where(a => a.MajorId == majorId).Any());
             }
             return View(await command.ToListAsync());
         }
