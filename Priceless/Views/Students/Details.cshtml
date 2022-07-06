@@ -17,10 +17,7 @@
     {
         if (personCache.Status == "Admin" || personCache.Status == "Curator" || personCache.Id == Model.Id || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
         {
-            if (personCache.Id != Model.Id)
-            {
-                flag = true;
-            }
+            flag = personCache.Id != Model.Id;
             <div class="row pad">
                 <div class="col-md-6">
                     @{
@@ -61,16 +58,6 @@
                             <p></p>
                         }
                     }
-                </div>
-                <div class="col-md-6" style="text-align:right;">
-                @{
-                    if (flag && Model.Status == "In  process")
-                    {
-                        <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="true">Принять</a>
-                        <span>|</span>
-                        <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="false" asp-route-student="true">Отклонить</a>
-                    }
-                }
                 </div>
             </div>
             <hr />
@@ -205,10 +192,20 @@ else
             <div class="description-prod">
                 @{
                     if (admission.Status == "In process")
+                    {
+                        <h5>Статус заявки: В рассмотрении</h5>
+                        if (flag)
                         {
-                            <h5>Статус заявки: В рассмотрении</h5>
+                            <p>
+                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="true" asp-route-majorId="@admission.MajorId">Принять</a>
+                                |
+                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="false" asp-route-student="true" asp-route-majorId="@admission.MajorId">Отклонить</a>
+                            </p>
                         }
-                        else if (admission.Status == "Admitted")
+                    }
+                    else
+                    {
+                        if (admission.Status == "Admitted")
                         {
                             <h5>Статус заявки: Принята</h5>
                             <p>@admission.StatusComment</p>
@@ -218,19 +215,15 @@ else
                             <h5>Статус заявки: Отклонена</h5>
                             <p>@admission.StatusComment</p>
                         }
-                }
-                @{
-                    if (flag && Model.Status == "In  process")
-                    {
-                                <p>
-                                    <a asp-action="Admit" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="true">Принять</a>
-                                    <span>|</span>
-                                    <a asp-action="Reject" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-student="true">Отклонить</a>
-                                </p>
-                        
+                        if (flag)
+                        {
+                            <p>
+                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="true" asp-route-majorId="@admission.MajorId" asp-route-changeDecision="true">Изменить решение</a>
+                            </p>
+                        }
                     }
                 }
-                <a asp-controller="Majors" asp-action="Details" asp-route-id="@admission.Major.Id" class="stretched-link"></a>
+                <a asp-controller="Majors" asp-action="Details" asp-route-id="@admission.Major.Id">Детали</a>
             </div>
         </div>
     </div>
