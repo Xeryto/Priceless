@@ -46,7 +46,7 @@ namespace Priceless.Services
 
         public async Task<List<Teacher>> GetAllCurators()
         {
-            return await _context.Teachers.Where(i => i.Status == "Curator").ToListAsync();
+            return await _context.Teachers.Where(i => i.Status == "Curator").Include(i => i.CourseAssignments).ThenInclude(i => i.Course).Include(i => i.MajorAssignments).ThenInclude(i => i.Major).AsNoTracking().ToListAsync();
         }
 
         public async Task<Person> GetByLogin(string login)

@@ -66,6 +66,16 @@
                     <span class="focus-input100" data-placeholder="Школа"></span>
                 </div>
 
+                @{
+                    if (personCache.Status == "Admin" || personCache.Status == "Curator")
+                    {
+                        <div class="wrap-input100 validate-input" data-validate="Приветственное слово (О себе)">
+                            <input class="input100" asp-for="SelfDesc" />
+                            <span class="focus-input100" data-placeholder="О себе"></span>
+                        </div>
+                    }
+                }
+
                 <div class="wrap-select100 validate-input">
                     <p style="color: #999999">Картинка</p>
                     <label class="file">
@@ -98,19 +108,19 @@
                                     {
                                         if (cnt++ % 2 == 0)
                                         {
-            @:</div><div class="row">
-            }
-            @:<div class="col-md-6">
-                <label class="control checkbox">
-                    <input type="checkbox"
-                           name="selectedMajors"
-                           value="@major.MajorId"
-                           @(Html.Raw(major.Assigned ? "checked=\"checked\"" : "")) />
-                    <span class="control-indicator"></span>
-                    @major.Title
-                </label>
-                                    @:</div>
-                                } }
+                                        @:</div><div class="row">
+                                        }
+                                        @:<div class="col-md-6">
+                                            <label class="control checkbox">
+                                                <input type="checkbox"
+                                                       name="selectedMajors"
+                                                       value="@major.MajorId"
+                                                       @(Html.Raw(major.Assigned ? "checked=\"checked\"" : "")) />
+                                                <span class="control-indicator"></span>
+                                                @major.Title
+                                            </label>
+                                        @:</div>
+                                    } }
                             </div>
                         </div>
                     </div>
@@ -130,20 +140,20 @@
                                         {
                                             if (cnt2++ % 3 == 0)
                                             {
-            @:</div><div class="row">
-            }
-            @:<div class="col-md-6">
-                <label class="control checkbox">
-                    <input type="checkbox"
-                           name="selectedCourses"
-                           value="@course.CourseId"
-                           @(Html.Raw(course.Assigned ? "checked=\"checked\"" : "")) />
-                    <span class="control-indicator"></span>
-                    @course.CourseId :  @course.Title
-                </label>
-                                        @:</div>
-                                    }
-                                } }
+                                            @:</div><div class="row">
+                                            }
+                                            @:<div class="col-md-6">
+                                                <label class="control checkbox">
+                                                    <input type="checkbox"
+                                                           name="selectedCourses"
+                                                           value="@course.CourseId"
+                                                           @(Html.Raw(course.Assigned ? "checked=\"checked\"" : "")) />
+                                                    <span class="control-indicator"></span>
+                                                    @course.CourseId :  @course.Title
+                                                </label>
+                                            @:</div>
+                                        }
+                                    } }
                             </div>
                         </div>
                     </div>
