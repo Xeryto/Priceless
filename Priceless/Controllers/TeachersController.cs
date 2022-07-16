@@ -24,7 +24,6 @@ namespace Priceless.Controllers
             _context = context;
         }
 
-
         // GET: Teachers
         public async Task<IActionResult> Index()
         {
@@ -104,7 +103,7 @@ namespace Priceless.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAdmin([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,Image")] Teacher teacher, int[] selectedMajors, string Code, bool Curator)
+        public async Task<IActionResult> CreateAdmin([Bind("Id,Login,Password,Name,Phone,VK,Grade,School,SelfDesc,Image")] Teacher teacher, int[] selectedMajors, string Code, bool Curator)
         {
             teacher.MajorAssignments = new List<MajorAssignment>();
             if (ModelState.IsValid)
@@ -264,57 +263,115 @@ namespace Priceless.Controllers
                     .ThenInclude(i => i.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (await TryUpdateModelAsync<Teacher>(
+            if (teacherToUpdate.Status == "Admin" || teacherToUpdate.Status == "Curator")
+            {
+                if (await TryUpdateModelAsync<Teacher>(
+                teacherToUpdate,
+                "",
+                i => i.Name, i => i.Password, i => i.Phone, i => i.VK, i => i.Grade, i => i.School, i => i.SelfDesc, i => i.Image))
+                {
+                    if (deleteImage)
+                    {
+                        teacherToUpdate.Image = null;
+                    }
+                    if (oldPas != null && VerifyHashed(teacherToUpdate.Password, oldPas))
+                    {
+                        teacherToUpdate.Password = Hash(newPas);
+                    }
+                    UpdateTeacherMajors(selectedMajors, teacherToUpdate);
+                    if (teacherToUpdate.MajorAssignments.Where(i => i.Status == "In process").Any() && teacherToUpdate.Status != "Admitted")
+                    {
+                        teacherToUpdate.Status = "In process";
+                    }
+                    string ids;
+                    HttpContext.Request.Cookies.TryGetValue("Id", out ids);
+                    PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
+                    if (personCache != null)
+                    {
+                        personCache.Status = teacherToUpdate.Status;
+                        personCache.Image = teacherToUpdate.Image;
+                        WebCache.Remove("LoggedIn" + teacherToUpdate.Id.ToString());
+                    }
+                    else
+                    {
+                        personCache = new PersonCacheModel()
+                        {
+                            Id = teacherToUpdate.Id,
+                            Role = "Student",
+                            Status = teacherToUpdate.Status,
+                            Image = teacherToUpdate.Image
+                        };
+                    }
+                    WebCache.Set("LoggedIn" + teacherToUpdate.Id.ToString(), personCache, 60, true);
+                    UpdateTeacherCourses(selectedCourses, teacherToUpdate);
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateException /* ex */)
+                    {
+                        //Log the error (uncomment ex variable name and write a log.)
+                        ModelState.AddModelError("", "Unable to save changes. " +
+                            "Try again, and if the problem persists, " +
+                            "see your system administrator.");
+                    }
+                    return RedirectToAction(nameof(Index), "Home");
+                }
+            }
+            else
+            {
+                if (await TryUpdateModelAsync<Teacher>(
                 teacherToUpdate,
                 "",
                 i => i.Name, i => i.Password, i => i.Phone, i => i.VK, i => i.Grade, i => i.School, i => i.Image))
-            {
-                if (deleteImage)
                 {
-                    teacherToUpdate.Image = null;
-                }
-                if (oldPas != null && VerifyHashed(teacherToUpdate.Password, oldPas))
-                {
-                    teacherToUpdate.Password = Hash(newPas);
-                }
-                UpdateTeacherMajors(selectedMajors, teacherToUpdate);
-                if (teacherToUpdate.MajorAssignments.Where(i => i.Status == "In process").Any() && teacherToUpdate.Status != "Admitted")
-                {
-                    teacherToUpdate.Status = "In process";
-                }
-                string ids;
-                HttpContext.Request.Cookies.TryGetValue("Id", out ids);
-                PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
-                if (personCache != null)
-                {
-                    personCache.Status = teacherToUpdate.Status;
-                    personCache.Image = teacherToUpdate.Image;
-                    WebCache.Remove("LoggedIn" + teacherToUpdate.Id.ToString());
-                }
-                else
-                {
-                    personCache = new PersonCacheModel()
+                    if (deleteImage)
                     {
-                        Id = teacherToUpdate.Id,
-                        Role = "Student",
-                        Status = teacherToUpdate.Status,
-                        Image = teacherToUpdate.Image
-                    };
+                        teacherToUpdate.Image = null;
+                    }
+                    if (oldPas != null && VerifyHashed(teacherToUpdate.Password, oldPas))
+                    {
+                        teacherToUpdate.Password = Hash(newPas);
+                    }
+                    UpdateTeacherMajors(selectedMajors, teacherToUpdate);
+                    if (teacherToUpdate.MajorAssignments.Where(i => i.Status == "In process").Any() && teacherToUpdate.Status != "Admitted")
+                    {
+                        teacherToUpdate.Status = "In process";
+                    }
+                    string ids;
+                    HttpContext.Request.Cookies.TryGetValue("Id", out ids);
+                    PersonCacheModel personCache = WebCache.Get("LoggedIn" + teacherToUpdate.Id.ToString());
+                    if (personCache != null)
+                    {
+                        personCache.Status = teacherToUpdate.Status;
+                        personCache.Image = teacherToUpdate.Image;
+                        WebCache.Remove("LoggedIn" + teacherToUpdate.Id.ToString());
+                    }
+                    else
+                    {
+                        personCache = new PersonCacheModel()
+                        {
+                            Id = teacherToUpdate.Id,
+                            Role = "Student",
+                            Status = teacherToUpdate.Status,
+                            Image = teacherToUpdate.Image
+                        };
+                    }
+                    WebCache.Set("LoggedIn" + teacherToUpdate.Id.ToString(), personCache, 60, true);
+                    UpdateTeacherCourses(selectedCourses, teacherToUpdate);
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateException /* ex */)
+                    {
+                        //Log the error (uncomment ex variable name and write a log.)
+                        ModelState.AddModelError("", "Unable to save changes. " +
+                            "Try again, and if the problem persists, " +
+                            "see your system administrator.");
+                    }
+                    return RedirectToAction(nameof(Index), "Home");
                 }
-                WebCache.Set("LoggedIn" + teacherToUpdate.Id.ToString(), personCache, 60, true);
-                UpdateTeacherCourses(selectedCourses, teacherToUpdate);
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException /* ex */)
-                {
-                    //Log the error (uncomment ex variable name and write a log.)
-                    ModelState.AddModelError("", "Unable to save changes. " +
-                        "Try again, and if the problem persists, " +
-                        "see your system administrator.");
-                }
-                return RedirectToAction(nameof(Index), "Home");
             }
             UpdateTeacherMajors(selectedMajors, teacherToUpdate);
             UpdateTeacherCourses(selectedCourses, teacherToUpdate);
