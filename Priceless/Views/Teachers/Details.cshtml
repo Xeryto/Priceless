@@ -6,6 +6,7 @@
 @{
     ViewData["Title"] = "Details";
     bool flag = false;
+    bool sf = false;
     string ids;
     PersonCacheModel personCache = null;
     var assignments = Model.MajorAssignments;
@@ -17,10 +18,8 @@
     {
         if (personCache.Status == "Admin" || personCache.Status == "Curator" || personCache.Id == Model.Id || (personCache.Status == "Admitted" & personCache.Role == "Teacher"))
         {
-            if (personCache.Id != Model.Id)
-            {
-                flag = true;
-            }
+            flag = personCache.Id != Model.Id && (personCache.Status == "Admin" || personCache.Status == "Curator");
+            sf = Model.Status == "Admin" || Model.Status == "Curator";
             <div class="row pad">
                 <div class="col-md-6">
                     @{
@@ -40,9 +39,9 @@
                             <p>Для подробностей, обратитесь к разделу "Направления" внизу страницы</p>
                         }
                         else
-                    {
+                        {
                             <h1>Статус заявки: @Model.Status</h1>
-                    }
+                        }
                     }
                 </div>
             </div>
@@ -61,94 +60,110 @@
                 }
             </div>
             <div class="row pad">
-                    <div class="row">
-                        <div class="col-md-6" style="text-align: center;">
-                            @{
-                                if (Model.Image != null)
-                                {
-                                    <img src="@Model.Image" alt="image" class="rounded-circle" style="width: 300px; height: 300px;"/>
+                <div class="row">
+                    <div class="col-md-6" style="text-align: center;">
+                        @{
+                            if (Model.Image != null)
+                            {
+                                <img src="@Model.Image" alt="image" class="rounded-circle" style="width: 300px; height: 300px;" />
+                            }
+                            else
+                            {
+                                <img src="~/img/default-user-icon.jpg" alt="image" class="rounded-circle" style="width: 300px; height: 300px;" />
+                            }
+                        }
+                        <dl class="row">
+                            <dt class="col-sm-6">
+                                Почта
+                            </dt>
+                            <dd class="col-sm-6">
+                                @Html.DisplayFor(model => model.Login)
+                            </dd>
+                            <dt class="col-sm-6">
+                                ФИО
+                            </dt>
+                            <dd class="col-sm-6">
+                                @Html.DisplayFor(model => model.Name)
+                            </dd>
+                            <dt class="col-sm-6">
+                                Номер телефона
+                            </dt>
+                            <dd class="col-sm-6">
+                                @Html.DisplayFor(model => model.Phone)
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6" style="text-align: center;">
+                        <dl class="row">
+                            <dt class="col-sm-6">
+                                Аккаунт VK
+                            </dt>
+                            <dd class="col-sm-6">
+                                @{if (Model.VK != null)
+                                    {
+                                        if (Model.VK.Contains("https"))
+                                        {
+                                            <a href="@Model.VK">@Html.DisplayFor(model => model.VK)</a> }
+                                        else if (Model.VK.Contains("vk.com"))
+                                        {
+                                            <a href="//@Model.VK">@Html.DisplayFor(model => model.VK)</a> }
+                                        else
+                                        {
+                                            @Html.DisplayFor(model => model.VK)
+                                        }
+                                    }
+
                                 }
-                                else
+                            </dd>
+                            <dt class="col-sm-6">
+                                Школа
+                            </dt>
+                            <dd class="col-sm-6">
+                                @Html.DisplayFor(model => model.School)
+                            </dd>
+                            @{
+                                if (sf)
                                 {
-                                    <img src="~/img/default-user-icon.jpg" alt="image" class="rounded-circle" style="width: 300px; height: 300px;"/>
+                                    <dt class="col-sm-6">
+                                        О себе
+                                    </dt>
+                                    <dd class="col-sm-6">
+                                        @Html.DisplayFor(model => model.SelfDesc)
+                                    </dd>
                                 }
                             }
-                            <dl class="row">
-                                <dt class="col-sm-6">
-                                    Почта
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.Login)
-                                </dd>
-                                <dt class="col-sm-6">
-                                    ФИО
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.Name)
-                                </dd>
-                                <dt class="col-sm-6">
-                                    Номер телефона
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.Phone)
-                                </dd>
-                            </dl>
-                        </div>
-                        <div class="col-md-6" style="text-align: center;">
-                            <dl class="row">
-                                <dt class="col-sm-6">
-                                    Аккаунт VK
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @{if (Model.VK != null)
-                    {
-                                    if (Model.VK.Contains("https"))
-                                        {
-                                <a href="@Model.VK">@Html.DisplayFor(model => model.VK)</a> }
-                                                    else if (Model.VK.Contains("vk.com"))
-                                                    {
-                                <a href="//@Model.VK">@Html.DisplayFor(model => model.VK)</a> }
-                                                    else
-                                                    {
-                                                        @Html.DisplayFor(model => model.VK)
-                                                    }
-                    }
-                                        
-                                    }
-                                </dd>
-                                <dt class="col-sm-6">
-                                    Школа
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.School)
-                                </dd>
-                                <dt class="col-sm-6">
-                                    Класс
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.Grade)
-                                </dd>
-                                <dt class="col-sm-6">
-                                    Ответ на первый вопрос
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.FirstQA)
-                                </dd>
-                                <dt class="col-sm-6">
-                                    Ответ на второй вопрос
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.SecondQA)
-                                </dd>
-                                <dt class="col-sm-6">
-                                    Ответ на третий вопрос
-                                </dt>
-                                <dd class="col-sm-6">
-                                    @Html.DisplayFor(model => model.ThirdQA)
-                                </dd>
-                            </dl>
-                        </div>
+                            <dt class="col-sm-6">
+                                Класс
+                            </dt>
+                            <dd class="col-sm-6">
+                                @Html.DisplayFor(model => model.Grade)
+                            </dd>
+                            @{
+                                if (!sf)
+                                {
+                                    <dt class="col-sm-6">
+                                        Ответ на первый вопрос
+                                    </dt>
+                                    <dd class="col-sm-6">
+                                        @Html.DisplayFor(model => model.FirstQA)
+                                    </dd>
+                                    <dt class="col-sm-6">
+                                        Ответ на второй вопрос
+                                    </dt>
+                                    <dd class="col-sm-6">
+                                        @Html.DisplayFor(model => model.SecondQA)
+                                    </dd>
+                                    <dt class="col-sm-6">
+                                        Ответ на третий вопрос
+                                    </dt>
+                                    <dd class="col-sm-6">
+                                        @Html.DisplayFor(model => model.ThirdQA)
+                                    </dd>
+                                }
+                            }
+                        </dl>
                     </div>
+                </div>
             </div>
             <hr />
             <div class="row pad bg-custom">
@@ -156,74 +171,74 @@
             </div>
             <div class="row pad bg-custom">
                 <div class="container">
-    <div class="row">
-        @{ int cnt2 = 0;
+                    <div class="row">
+                        @{ int cnt2 = 0;
 
-                        foreach (var assignment in assignments)
-                        {
-                            cnt2++;
-                            if (cnt2 % 3 == 1)
+                            foreach (var assignment in assignments)
                             {
-        @:</div><div class="row">
-                }
+                                cnt2++;
+                                if (cnt2 % 3 == 1)
+                                {
+                                @:</div><div class="row">
+                                }
 
 
-<div class="col-md-4">
-    <div class="wsk-cp-product">
-        <div class="wsk-cp-img">
-            @{ if (assignment.Major.Image == null)
-                {
-<img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
-else
-{
-<img src="@assignment.Major.Image" alt="courseImage" class="img-responsive" /> } }
-        </div>
-        <div class="wsk-cp-text">
-            <div class="title-product">
-                <h3>@assignment.Major.Title</h3>
-            </div>
-            <div class="description-prod">
-                @{
-                    if (assignment.Status == "In process")
-                    {
-                        <h5>Статус заявки: В рассмотрении</h5>
-                        if (flag)
-                        {
-                            <p>
-                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="false" asp-route-majorId="@assignment.MajorId">Принять</a>
-                                |
-                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="false" asp-route-student="false" asp-route-majorId="@assignment.MajorId">Отклонить</a>
-                            </p>
-                        }
-                    }
-                    else
-                    {
-                        if (assignment.Status == "Admitted")
-                        {
-                            <h5>Статус заявки: Принята</h5>
-                            <p>@assignment.StatusComment</p>
-                        }
-                        else if (assignment.Status == "Rejected")
-                        {
-                            <h5>Статус заявки: Отклонена</h5>
-                            <p>@assignment.StatusComment</p>
-                        }
-                        if (flag)
-                        {
-                            <p>
-                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="false" asp-route-majorId="@assignment.MajorId" asp-route-changeDecision="true">Изменить решение</a>
-                            </p>
-                        }
-                    }
-                }
-                <a asp-controller="Majors" asp-action="Details" asp-route-id="@assignment.Major.Id">Детали</a>
-            </div>
-        </div>
-    </div>
-</div> } }
-    </div>
+                                <div class="col-md-4">
+                                    <div class="wsk-cp-product">
+                                        <div class="wsk-cp-img">
+                                            @{ if (assignment.Major.Image == null)
+                                                {
+                                                    <img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+                                                else
+                                                {
+                                                    <img src="@assignment.Major.Image" alt="courseImage" class="img-responsive" /> } }
+                                        </div>
+                                        <div class="wsk-cp-text">
+                                            <div class="title-product">
+                                                <h3>@assignment.Major.Title</h3>
+                                            </div>
+                                            <div class="description-prod">
+                                                @{
+                                                    if (assignment.Status == "In process")
+                                                    {
+                                                        <h5>Статус заявки: В рассмотрении</h5>
+                                                        if (flag)
+                                                        {
+                                                            <p>
+                                                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="false" asp-route-majorId="@assignment.MajorId">Принять</a>
+                                                                |
+                                                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="false" asp-route-student="false" asp-route-majorId="@assignment.MajorId">Отклонить</a>
+                                                            </p>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (assignment.Status == "Admitted")
+                                                        {
+                                                            <h5>Статус заявки: Принята</h5>
+                                                            <p>@assignment.StatusComment</p>
+                                                        }
+                                                        else if (assignment.Status == "Rejected")
+                                                        {
+                                                            <h5>Статус заявки: Отклонена</h5>
+                                                            <p>@assignment.StatusComment</p>
+                                                        }
+                                                        if (flag)
+                                                        {
+                                                            <p>
+                                                                <a asp-controller="Home" asp-action="Manage" asp-route-id="@Model.Id" asp-route-userId="@personCache.Id" asp-route-admit="true" asp-route-student="false" asp-route-majorId="@assignment.MajorId" asp-route-changeDecision="true">Изменить решение</a>
+                                                            </p>
+                                                        }
+                                                    }
+                                                }
+                                                <a asp-controller="Majors" asp-action="Details" asp-route-id="@assignment.Major.Id">Детали</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> } }
+                    </div>
 
-</div>
+                </div>
 
             </div>
             <hr />
@@ -232,83 +247,196 @@ else
             </div>
             <div class="row pad">
                 <div class="container">
-    <div class="row">
-        @{
-            var courses = Model.CourseAssignments.Select(i => i.Course);
-            int cnt = 0;
+                    <div class="row">
+                        @{
+                            var courses = Model.CourseAssignments.Select(i => i.Course);
+                            int cnt = 0;
 
-            foreach (var course in courses)
-            {
-                cnt++;
-                if (cnt % 3 == 1)
-                {
-@:</div><div class="row">
-}
+                            foreach (var course in courses)
+                            {
+                                cnt++;
+                                if (cnt % 3 == 1)
+                                {
+                                @:</div><div class="row">
+                                }
 
 
-<div class="col-md-4">
-    <div class="wsk-cp-product">
-        <div class="wsk-cp-img">
-            @{ if (course.Image == null)
-                {
-<img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
-else
-{
-<img src="@course.Image" alt="courseImage" class="img-responsive" /> } }
-        </div>
-        <div class="wsk-cp-text">
-            <div class="title-product">
-                <h3>@course.Title</h3>
-            </div>
-            <div class="description-prod">
-                <a asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id" class="stretched-link"></a>
-            </div>
-        </div>
-    </div>
-</div> } }
-    </div>
+                                <div class="col-md-4">
+                                    <div class="wsk-cp-product">
+                                        <div class="wsk-cp-img">
+                                            @{ if (course.Image == null)
+                                                {
+                                                    <img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+                                                else
+                                                {
+                                                    <img src="@course.Image" alt="courseImage" class="img-responsive" /> } }
+                                        </div>
+                                        <div class="wsk-cp-text">
+                                            <div class="title-product">
+                                                <h3>@course.Title</h3>
+                                            </div>
+                                            <div class="description-prod">
+                                                <a asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id" class="stretched-link"></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> } }
+                    </div>
 
-</div>
+                </div>
             </div>
             if ((personCache.Status == "Admin" || personCache.Status == "Curator") && personCache.Id == Model.Id)
-                    {
-                        <div class="row pad">
-                            <h2>Управление</h2>
-                        </div>
-                        <div class="row pad">
-                            <div class="col-md-4">
-                                <a class="btn btn-primary" asp-controller="Streams" asp-action="Manage" asp-route-userId="@personCache.Id" asp-route-open="true">
-                                    Открыть регистрацию на текущий поток
-                                </a>
-                            </div>
-                            <div class="col-md-4">
-                                <a class="btn btn-primary" asp-controller="Streams" asp-action="Manage" asp-route-userId="@personCache.Id" asp-route-open="false">
-                                    Закрыть регистрацию на текущий поток
-                                </a>
-                            </div>
-                            <div class="col-md-4">
-                                <a class="btn btn-primary" asp-controller="Streams" asp-action="Close" asp-route-userId="@personCache.Id">
-                                    Завершить текущий поток
-                                </a>
-                            </div>
-                        </div>
-                    }
+            {
+                <div class="row pad">
+                    <h2>Управление</h2>
+                </div>
+                <div class="row pad">
+                    <div class="col-md-4">
+                        <a class="btn btn-primary" asp-controller="Streams" asp-action="Manage" asp-route-userId="@personCache.Id" asp-route-open="true">
+                            Открыть регистрацию на текущий поток
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a class="btn btn-primary" asp-controller="Streams" asp-action="Manage" asp-route-userId="@personCache.Id" asp-route-open="false">
+                            Закрыть регистрацию на текущий поток
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a class="btn btn-primary" asp-controller="Streams" asp-action="Close" asp-route-userId="@personCache.Id">
+                            Завершить текущий поток
+                        </a>
+                    </div>
+                </div>
+            }
         }
         else
         {
-            <div class="takeup">
-<span class="text-danger">Только учителя могут просматривать эту страницу</span>
-        </div>
-            
+            <div class="row pad">
+                <div class="col-md-4">
+                    @{
+                        if (Model.Image != null)
+                        {
+                            <img src="@Model.Image" alt="image" class="rounded-circle" style="width: 300px; height: 300px;" />
+                        }
+                        else
+                        {
+                            <img src="~/img/default-user-icon.jpg" alt="image" class="rounded-circle" style="width: 300px; height: 300px;" />
+                        }
+                    }
+                </div>
+                <div class="col-md-8">
+                    <h2>О себе</h2>
+                    <hr />
+                    <p>@Model.SelfDesc</p>
+                </div>
+            </div>
+            <hr />
+            <div class="row pad bg-custom">
+                <h2>Направления подготовки</h2>
+            </div>
+            <div class="row pad bg-custom">
+                <div class="container">
+                    <div class="row">
+                        @{ int cnt2 = 0;
+
+                            foreach (var assignment in assignments)
+                            {
+                                cnt2++;
+                                if (cnt2 % 3 == 1)
+                                {
+                                @:</div><div class="row">
+                                }
+
+
+                                <div class="col-md-4">
+                                    <div class="wsk-cp-product">
+                                        <div class="wsk-cp-img">
+                                            @{ if (assignment.Major.Image == null)
+                                                {
+                                                    <img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+                                                else
+                                                {
+                                                    <img src="@assignment.Major.Image" alt="courseImage" class="img-responsive" /> } }
+                                        </div>
+                                        <div class="wsk-cp-text">
+                                            <div class="title-product">
+                                                <h3>@assignment.Major.Title</h3>
+                                            </div>
+                                            <a asp-controller="Majors" asp-action="Details" asp-route-id="@assignment.Major.Id" class="stretched-link"></a>
+                                        </div>
+                                    </div>
+                                </div> } }
+                    </div>
+
+                </div>
+
+            </div>
         }
     }
     else
     {
-        <div class="takeup">
-<span class="text-danger"><a asp-action="Login" asp-controller="Home">Вы должны сперва войти в систему</a></span>
+        <div class="row pad">
+            <div class="col-md-4">
+                @{
+                    if (Model.Image != null)
+                    {
+                        <img src="@Model.Image" alt="image" class="rounded-circle" style="width: 300px; height: 300px;" />
+                    }
+                    else
+                    {
+                        <img src="~/img/default-user-icon.jpg" alt="image" class="rounded-circle" style="width: 300px; height: 300px;" />
+                    }
+                }
+            </div>
+            <div class="col-md-8">
+                <h2>О себе</h2>
+                <hr />
+                <p>@Model.SelfDesc</p>
+            </div>
         </div>
-        
-    }
+        <hr />
+        <div class="row pad bg-custom">
+            <h2>Направления подготовки</h2>
+        </div>
+        <div class="row pad bg-custom">
+            <div class="container">
+                <div class="row">
+                    @{ int cnt2 = 0;
+
+                        foreach (var assignment in assignments)
+                        {
+                            cnt2++;
+                            if (cnt2 % 3 == 1)
+                            {
+                            @:</div><div class="row">
+                            }
+
+
+                            <div class="col-md-4">
+                                <div class="wsk-cp-product">
+                                    <div class="wsk-cp-img">
+                                        @{ if (assignment.Major.Image == null)
+                                            {
+                                                <img src="~/img/major.png" alt="courseImage" class="img-responsive" /> }
+                                            else
+                                            {
+                                                <img src="@assignment.Major.Image" alt="courseImage" class="img-responsive" /> } }
+                                    </div>
+                                    <div class="wsk-cp-text">
+                                        <div class="title-product">
+                                            <h3>@assignment.Major.Title</h3>
+                                        </div>
+                                        <a asp-controller="Majors" asp-action="Details" asp-route-id="@assignment.Major.Id" class="stretched-link"></a>
+                                    </div>
+                                </div>
+                            </div> } }
+                </div>
+
+            </div>
+
+        </div>
+
+}
 }
 
 

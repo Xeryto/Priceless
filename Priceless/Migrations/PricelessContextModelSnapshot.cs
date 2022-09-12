@@ -286,6 +286,9 @@ namespace Priceless.Migrations
                     b.Property<string>("School")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SelfDesc")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("VK")
                         .HasColumnType("nvarchar(max)");
 

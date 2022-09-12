@@ -33,7 +33,7 @@ namespace Priceless.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly HomeService _service;
-        private readonly string domain = "https://pricelessedu.azurewebsites.net/";
+        private readonly string domain = "https://pricelessedu.ru/";
 
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, HomeService service)
         {
@@ -119,7 +119,7 @@ namespace Priceless.Controllers
                     emailMessage.Subject = "Открыта регистрация в Priceless";
                     emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
                     {
-                        Text = "<p>Здравствуйте! Рады сообщить, что мы открываем запись на новый поток проекта Priceless education. Следить за изменением статуса заявки вы сможете в личном кабинете на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте</a>.</p>"
+                        Text = "<p>Здравствуйте! Рады сообщить, что мы открываем запись на новый поток проекта Priceless education. Следить за изменением статуса заявки вы сможете в личном кабинете на нашем <a href='"+domain+"'>сайте</a>.</p>"
                     };
 
                     using (var client = new SmtpClient())
@@ -168,7 +168,7 @@ namespace Priceless.Controllers
             var hash = Hash(person.Id.ToString()).Replace("/", "slash");
             emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
             {
-                Text = "<p>Здравствуйте! Вы запросили восстановление пароля. Если это были вы, перейдите по <a href='https://pricelessedu.azurewebsites.net/Home/RestoreConfirm/"+hash+"'>ссылке</a> для смены пароля. Иначе, проигнорируйте это письмо.</p>"
+                Text = "<p>Здравствуйте! Вы запросили восстановление пароля. Если это были вы, перейдите по <a href='"+domain+"Home/RestoreConfirm/"+hash+"'>ссылке</a> для смены пароля. Иначе, проигнорируйте это письмо.</p>"
             };
 
             using (var client = new SmtpClient())
@@ -392,7 +392,7 @@ namespace Priceless.Controllers
                     emailMessage.Subject = "Заявка в Priceless";
                     emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
                     {
-                        Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте,</a> зайдя в личный кабинет.</p>"
+                        Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='"+domain+"'>сайте,</a> зайдя в личный кабинет.</p>"
                     };
 
                     using (var client = new SmtpClient())
@@ -456,7 +456,7 @@ namespace Priceless.Controllers
                     emailMessage.Subject = "Заявка в Priceless";
                     emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
                     {
-                        Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте,</a> зайдя в личный кабинет.</p>"
+                        Text = "<p>Здравствуйте! Вы подавали заявку на занятия в проекте Priceless Education. Сообщаем, что ваша заявка рассмотрена, с нашим решением вы можете ознакомиться на нашем <a href='"+domain+"'>сайте,</a> зайдя в личный кабинет.</p>"
                     };
 
                     using (var client = new SmtpClient())

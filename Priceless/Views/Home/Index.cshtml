@@ -198,6 +198,7 @@
                                     <h3>@admin.Name</h3>
                                 </div>
                             </div>
+                            <a class="stretched-link" asp-action="Details" asp-controller="Teachers" asp-route-id="@admin.Id"></a>
                         </div>
                     </div> } }
         </div>
@@ -244,7 +245,14 @@
                                 <div class="title-product">
                                     <h3>@curator.Name</h3>
                                 </div>
+                                @{
+                                    foreach (var major in curator.MajorAssignments)
+                                    {
+                                        <p>@major.Major.Title</p>
+                                    }
+                                }
                             </div>
+                            <a class="stretched-link" asp-action="Details" asp-controller="Teachers" asp-route-id="@curator.Id"></a>
                         </div>
                     </div> } }
         </div>
