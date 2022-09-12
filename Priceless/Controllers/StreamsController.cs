@@ -53,7 +53,7 @@ namespace Priceless.Controllers
                         emailMessage.Subject = "Открыта регистрация в Priceless";
                         emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
                         {
-                            Text = "<p>Здравствуйте! Рады сообщить, что мы открываем запись на новый поток проекта Priceless education. Следить за изменением статуса заявки вы сможете в личном кабинете на нашем <a href='https://pricelessedu.azurewebsites.net'>сайте</a>.</p>"
+                            Text = "<p>Здравствуйте! Рады сообщить, что мы открываем запись на новый поток проекта Priceless education. Следить за изменением статуса заявки вы сможете в личном кабинете на нашем <a href='https://pricelessedu.ru'>сайте</a>.</p>"
                         };
 
                         using (var client = new SmtpClient())
