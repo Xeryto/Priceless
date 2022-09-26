@@ -41,7 +41,7 @@ namespace Priceless.Services
 
         public async Task<List<Teacher>> GetAllAdmins()
         {
-            return await _context.Teachers.Where(i => i.Status == "Admin" && i.Id != 1).ToListAsync();
+            return await _context.Teachers.Where(i => i.Status == "Admin" && i.Login != "admin@mail.ru").ToListAsync();
         }
 
         public async Task<List<Teacher>> GetAllCurators()
