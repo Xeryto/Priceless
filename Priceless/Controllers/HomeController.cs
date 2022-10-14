@@ -230,7 +230,7 @@ namespace Priceless.Controllers
             if (await _service.Login(person.Login, person.Password))
             {
                 var commonPerson = await _service.GetByLogin(person.Login);
-                //NpgsqlConnection conn = new("Server=localhost;Port=5432;Database=postgres;User Id=goldp1");
+                //NpgsqlConnection conn = new("Server=localhost;Port=5432;Database=postgres;");
                 SqlConnection conn = new("*");
                 conn.Open();
                 SqlCommand command = new("Select Discriminator from People where Login = @login");
