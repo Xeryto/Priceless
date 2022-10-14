@@ -59,7 +59,7 @@ namespace Priceless.Controllers
                         using (var client = new SmtpClient())
                         {
                             await client.ConnectAsync("smtp.mail.ru", 465, true);
-                            await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
+                            await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                             await client.SendAsync(emailMessage);
 
                             await client.DisconnectAsync(true);

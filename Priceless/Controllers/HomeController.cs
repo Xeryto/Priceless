@@ -125,7 +125,7 @@ namespace Priceless.Controllers
                     using (var client = new SmtpClient())
                     {
                         await client.ConnectAsync("smtp.mail.ru", 465, true);
-                        await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
+                        await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                         await client.SendAsync(emailMessage);
 
                         await client.DisconnectAsync(true);
@@ -174,7 +174,7 @@ namespace Priceless.Controllers
             using (var client = new SmtpClient())
             {
                 await client.ConnectAsync("smtp.mail.ru", 465, true);
-                await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
+                await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                 await client.SendAsync(emailMessage);
 
                 await client.DisconnectAsync(true);
@@ -230,8 +230,8 @@ namespace Priceless.Controllers
             if (await _service.Login(person.Login, person.Password))
             {
                 var commonPerson = await _service.GetByLogin(person.Login);
-                //NpgsqlConnection conn = new("Server=localhost;Port=5432;Database=postgres;User Id=goldp1");
-                SqlConnection conn = new("Persist Security Info=False;User ID=igoshin;Password=-!Игошин!-;Initial Catalog=igoshin2;Server=78.29.44.70\\SQLSERVER");
+                //NpgsqlConnection conn = new("Server=localhost;Port=5432;Database=postgres;");
+                SqlConnection conn = new("*");
                 conn.Open();
                 SqlCommand command = new("Select Discriminator from People where Login = @login");
                 //NpgsqlCommand command = new("SELECT "+'"'+"Discriminator"+'"'+" FROM "+'"'+"People"+'"'+" WHERE "+'"'+"Login"+'"'+" = @login");
@@ -398,7 +398,7 @@ namespace Priceless.Controllers
                     using (var client = new SmtpClient())
                     {
                         await client.ConnectAsync("smtp.mail.ru", 465, true);
-                        await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
+                        await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                         await client.SendAsync(emailMessage);
 
                         await client.DisconnectAsync(true);
@@ -462,7 +462,7 @@ namespace Priceless.Controllers
                     using (var client = new SmtpClient())
                     {
                         await client.ConnectAsync("smtp.mail.ru", 465, true);
-                        await client.AuthenticateAsync("priceless.edu@mail.ru", "Jja6jrrANxQMrDXt4pYb");
+                        await client.AuthenticateAsync("priceless.edu@mail.ru", "*");
                         await client.SendAsync(emailMessage);
 
                         await client.DisconnectAsync(true);
